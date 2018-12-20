@@ -1,0 +1,5 @@
+a23bb := 3 * (4 + 5) + 2 * 3;
+if a23bb > 5
+    a23bb := 5;
+endi;
+return a23bb;

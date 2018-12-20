@@ -1,0 +1,11 @@
+x := 5;
+
+fun f(x * 4)
+    return 5;
+endf;
+
+fun g(4)
+    return 6;
+endf;
+
+return 1;

@@ -1,0 +1,11 @@
+x := 0;
+
+fun if()
+    input a;
+endf;
+
+fun fun(fun)
+    return fun;
+endf;
+
+return x;

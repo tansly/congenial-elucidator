@@ -1,0 +1,26 @@
+a := 2;
+b := 8;
+
+fun f(x, y)
+    r := 1;
+    while y > 0
+        r := r * x;
+        y := y - 1;
+    endw;
+endf;
+
+fun g(x, y)
+    r := 1;
+    while y > 0
+        r := r * x;
+        y := y - 1;
+    endw;
+endf;
+
+fun h(x, y)
+    return 4 * 5;
+endf;
+
+c := 3 + f(a + 1, b / 4) * (4 + 2);
+output c;
+return c;

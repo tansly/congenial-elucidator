@@ -1,0 +1,14 @@
+a := 2;
+b := 8;
+
+fun f(x, y)
+    r := 1;
+    while y > 0
+        r := r * x;
+        y := y - 1;
+    endw;
+endf;
+
+c := f(a + 1, b / 4);
+output c;
+return c;

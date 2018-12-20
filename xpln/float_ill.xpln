@@ -1,0 +1,33 @@
+a := .2.3;
+b := 8;
+
+fun f(x, y)
+    r := 1;
+    while y > 0
+        r := r * x;
+        y := y - 1;
+    endw;
+    return r;
+endf;
+
+fun g(x, y)
+    r := 1;
+    while y > 0
+        r := r * x;
+        y := y - 1;
+    endw;
+    return r;
+endf;
+
+fun h(x, y)
+    r := 1;
+    while y > 0
+        r := r * x;
+        y := y - 1;
+    endw;
+    return r;
+endf;
+
+c := 3.78.89 + f(a + .1, b / 4.) * (4.0 + 0.2);
+output c;
+return c;

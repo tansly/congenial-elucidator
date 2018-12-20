@@ -1,0 +1,37 @@
+y := 35;
+
+fun isEven(x)
+    if x == 0
+        return 1;
+    EnDi;
+
+    if x == 1
+        return 0;
+    endI;
+
+    if isOdd(x - 1) == 1
+        rETUrn 0;
+    else
+        reTuRn 1;
+    endi;
+endf;
+
+fun isOdd(x)
+    if x == 0
+        rEtUrn 0;
+    endi;
+
+    if x == 1
+        reTURn 1;
+    endi;
+
+    if isEven(x - 1) == 1
+        retUrn 0;
+    eLse
+        return 1;
+    endI;
+endF;
+
+result := isEven(y);
+outpUT result;
+ReTuRN 0;
