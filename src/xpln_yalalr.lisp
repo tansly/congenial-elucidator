@@ -194,6 +194,14 @@
     (stmt --> ret #'(lambda (ret)
                       (identity ret)))
 
+    (assign --> ID COLON EQLS expr  #'(lambda (ID COLON EQLS expr)
+                                        (progn
+                                          (mk-sym-entry (t-get-val ID)) ; XXX: The original grammar did not do this.
+                                          (list (mk-place nil)
+                                                (mk-code (append (var-get-code expr)
+                                                                 (mk-2copy (t-get-val ID)
+                                                                           (var-get-place expr))))))))
+
     (ret --> K_RET expr  #'(lambda (K_RET expr)
                             ;; TODO: Code
                             (list (mk-place nil)
@@ -231,14 +239,6 @@
                                         (list (mk-place nil)
                                               (mk-code (append (var-get-code entries)
                                                                (var-get-code entry))))))
-
-    (assign --> ID COLON EQLS expr  #'(lambda (ID COLON EQLS expr)
-                                        (progn
-                                          (mk-sym-entry (t-get-val ID)) ; XXX: The original grammar did not do this.
-                                          (list (mk-place nil)
-                                                (mk-code (append (var-get-code expr)
-                                                                 (mk-2copy (t-get-val ID)
-                                                                           (var-get-place expr))))))))
 
     (expr     --> expr ADD term         #'(lambda (expr ADD term)
                                             (let ((newplace (newtemp)))
