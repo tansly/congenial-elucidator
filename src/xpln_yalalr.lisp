@@ -228,6 +228,16 @@
                                                                         (var-get-place expr1)
                                                                         (var-get-place expr2))))))))
 
+    (conditional --> expr GT expr  #'(lambda (expr1 GT expr2)
+                                       (let ((newplace (newtemp)))
+                                         (mk-sym-entry newplace)
+                                         (list (mk-place newplace)
+                                               (mk-code (append (var-get-code expr1)
+                                                                (var-get-code expr2)
+                                                                (mk-3ac 'lt newplace
+                                                                        (var-get-place expr2)
+                                                                        (var-get-place expr1))))))))
+
     ;; TODO: Function definitions
     (entry --> stmt  #'(lambda (stmt)
                          (identity stmt)))
@@ -298,7 +308,7 @@
 
     ))
 
-(defparameter lexforms '(ID END COLON EQLS LP RP ADD SUB MULT DIV LT K_RET K_IF K_ENDIF K_ELSE))
+(defparameter lexforms '(ID END COLON EQLS LP RP ADD SUB MULT DIV GT LT K_RET K_IF K_ENDIF K_ELSE))
 
 (defparameter lexicon '(
                         (\; END) ;; all but ID goes in the lexicon
@@ -312,6 +322,7 @@
                         (* MULT)
                         (/ DIV)
                         (< LT)
+                        (> GT)
                         (return K_RET)
                         (if K_IF)
                         (endi K_ENDIF)
