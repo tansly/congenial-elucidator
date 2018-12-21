@@ -60,7 +60,7 @@
 ;;  (2ac op p1 p2)
 ;;  (2copy p1 p1)
 
-(defparameter *tac-to-mips* '((MULT MUL) (DIV DIV)(ADD ADD)(SUB SUB)(UMINUS SUB)(LT SLT))) ; intstruction set corr.
+(defparameter *tac-to-mips* '((MULT MUL) (DIV DIV)(ADD ADD)(SUB SUB)(UMINUS SUB)(LT SLT)(AND AND))) ; intstruction set corr.
 
 ;; two functions to get type and value of tokens
 
@@ -211,13 +211,13 @@
                                                     ;; TODO: Code
                                                     (list (mk-place nil)
                                                           (mk-code nil))))
-
     (ifcond --> K_IF conditional stmts K_ELSE stmts K_ENDIF
             '#(lambda (K_IF conditional stmts K_ELSE stmts K_ENDIF)
                 ;; TODO: Code
                 (list (mk-place nil)
                       (mk-code nil))))
 
+    ;; TODO: Other relational operators
     (conditional --> expr LT expr  #'(lambda (expr1 LT expr2)
                                        (let ((newplace (newtemp)))
                                          (mk-sym-entry newplace)
@@ -227,7 +227,6 @@
                                                                 (mk-3ac 'lt newplace
                                                                         (var-get-place expr1)
                                                                         (var-get-place expr2))))))))
-
     (conditional --> expr GT expr  #'(lambda (expr1 GT expr2)
                                        (let ((newplace (newtemp)))
                                          (mk-sym-entry newplace)
@@ -237,6 +236,17 @@
                                                                 (mk-3ac 'lt newplace
                                                                         (var-get-place expr2)
                                                                         (var-get-place expr1))))))))
+    (conditional --> conditional K_AND conditional
+                 #'(lambda (cond1 K_AND cond2)
+                     (let ((newplace (newtemp)))
+                       (mk-sym-entry newplace)
+                       (list (mk-place newplace)
+                             (mk-code (append (var-get-code cond1)
+                                              (var-get-code cond2)
+                                              (mk-3ac 'and
+                                                      newplace
+                                                      (var-get-place cond1)
+                                                      (var-get-place cond2))))))))
 
     ;; TODO: Function definitions
     (entry --> stmt  #'(lambda (stmt)
@@ -308,7 +318,7 @@
 
     ))
 
-(defparameter lexforms '(ID END COLON EQLS LP RP ADD SUB MULT DIV GT LT K_RET K_IF K_ENDIF K_ELSE))
+(defparameter lexforms '(ID END COLON EQLS LP RP ADD SUB MULT DIV GT LT K_RET K_IF K_ENDIF K_ELSE K_AND K_OR))
 
 (defparameter lexicon '(
                         (\; END) ;; all but ID goes in the lexicon
@@ -327,6 +337,8 @@
                         (if K_IF)
                         (endi K_ENDIF)
                         (else K_ELSE)
+                        (and K_AND)
+                        (or K_OR)
                         ))
 ;; if you change the end-marker, change its hardcopy above in lexicon above as well.
 ;; (because LALR parser does not evaluate its lexicon symbols---sorry.)
