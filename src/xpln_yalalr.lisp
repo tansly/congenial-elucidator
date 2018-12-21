@@ -180,22 +180,27 @@
 
     ;; TODO: Other kinds of statements
     (stmt --> assign  #'(lambda (assign)
-                          identity (assign)))
+                          (identity assign)))
 
-    ;; TODO: entries
-    ;; Empty rules?
+    (entries -->  #'(lambda ()
+                      (list (mk-place nil)
+                            (mk-code nil))))
+    (entries --> entries entry END  #'(lambda (entries entry end)
+                                        (list (mk-place nil)
+                                              (mk-code (append (var-get-code entries)
+                                                               (var-get-code entry))))))
 
     ;; TODO: Function definitions
     (entry --> stmt  #'(lambda (stmt)
-                         identity (stmt)))
+                         (identity stmt)))
 
     (assign --> ID COLON EQLS expr  #'(lambda (ID COLON EQLS expr)
-                                        (mk-sym-entry (t-get-val ID)) ; XXX: The original grammar did not do this.
-                                        (list (mk-place nil)
-                                              (mk-code (append (var-get-code expr)
-                                                               (mk-2copy (t-get-val ID)
-                                                                         (var-get-place expr)))))))
-
+                                        (progn
+                                          (mk-sym-entry (t-get-val ID)) ; XXX: The original grammar did not do this.
+                                          (list (mk-place nil)
+                                                (mk-code (append (var-get-code expr)
+                                                                 (mk-2copy (t-get-val ID)
+                                                                           (var-get-place expr))))))))
     (expr     --> expr ADD term         #'(lambda (expr ADD term)
                                             (let ((newplace (newtemp)))
                                               (mk-sym-entry newplace)
@@ -215,7 +220,6 @@
                                                                      (mk-3ac 'sub newplace
                                                                              (var-get-place expr)
                                                                              (var-get-place term))))))))
-
     (expr     --> term               #'(lambda (term)
                                          (identity term)))
 
@@ -228,7 +232,6 @@
                                                                       (mk-3ac 'mult newplace
                                                                               (var-get-place term)
                                                                               (var-get-place factor))))))))
-
     (term    --> term DIV factor         #'(lambda (term DIV factor)
                                              (let ((newplace (newtemp)))
                                                (mk-sym-entry newplace)
@@ -238,20 +241,17 @@
                                                                       (mk-3ac 'div newplace
                                                                               (var-get-place term)
                                                                               (var-get-place factor))))))))
-
     (term    --> factor                #'(lambda (factor)
                                            (identity factor)))
 
     (factor     --> LP expr RP          #'(lambda (LP expr RP)
                                             (identity expr)))
-
     (factor     --> SUB ID           #'(lambda (SUB ID)
                                          (let ((newplace (newtemp)))
                                            (mk-sym-entry newplace)
                                            (list (mk-place newplace)
                                                  (mk-code (mk-2ac 'uminus newplace
                                                                   (t-get-val ID)))))))
-
     (factor     --> ID               #'(lambda (ID)
                                          (progn
                                            (mk-sym-entry (t-get-val ID))
