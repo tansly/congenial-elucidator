@@ -221,7 +221,7 @@
                 (list (mk-place nil)
                       (mk-code nil))))
     (ifcond --> K_IF conditional stmts K_ELSE stmts K_ENDIF
-            '#(lambda (K_IF conditional stmts K_ELSE stmts K_ENDIF)
+            #'(lambda (K_IF conditional stmts K_ELSE stmts K_ENDIF)
                 ;; TODO: Code
                 (list (mk-place nil)
                       (mk-code nil))))
