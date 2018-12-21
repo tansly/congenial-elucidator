@@ -181,7 +181,7 @@
     (stmts --> stmt END  #'(lambda (stmt END)
                              (list (mk-place nil)
                                    (mk-code (var-get-code stmt)))))
-    (stmts --> stmts stmt END  '#(lambda (stmts stmt END)
+    (stmts --> stmts stmt END  #'(lambda (stmts stmt END)
                                    (list (mk-place nil)
                                          (mk-code (append (var-get-code stmts)
                                                           (var-get-code stmt))))))
