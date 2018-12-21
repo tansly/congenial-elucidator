@@ -210,6 +210,20 @@
                 (list (mk-place nil)
                       (mk-code nil))))
 
+    (conditional --> expr LT expr  #'(lambda (expr1 LT expr2)
+                                       (let ((newplace (newtemp)))
+                                         (mk-sym-entry newplace)
+                                         (list (mk-place newplace)
+                                               (mk-code (append (var-get-code expr1)
+                                                                (var-get-code expr2)
+                                                                (mk-3ac 'lt newplace
+                                                                        (var-get-place expr1)
+                                                                        (var-get-place expr2))))))))
+
+    ;; TODO: Function definitions
+    (entry --> stmt  #'(lambda (stmt)
+                         (identity stmt)))
+
     (entries -->  #'(lambda ()
                       (list (mk-place nil)
                             (mk-code nil))))
@@ -217,10 +231,6 @@
                                         (list (mk-place nil)
                                               (mk-code (append (var-get-code entries)
                                                                (var-get-code entry))))))
-
-    ;; TODO: Function definitions
-    (entry --> stmt  #'(lambda (stmt)
-                         (identity stmt)))
 
     (assign --> ID COLON EQLS expr  #'(lambda (ID COLON EQLS expr)
                                         (progn
@@ -285,16 +295,6 @@
                                            (mk-sym-entry (t-get-val ID))
                                            (list (mk-place (t-get-val ID))
                                                  (mk-code nil)))))
-
-    (conditional --> expr LT expr  #'(lambda (expr1 LT expr2)
-                                       (let ((newplace (newtemp)))
-                                         (mk-sym-entry newplace)
-                                         (list (mk-place newplace)
-                                               (mk-code (append (var-get-code expr1)
-                                                                (var-get-code expr2)
-                                                                (mk-3ac 'lt newplace
-                                                                        (var-get-place expr1)
-                                                                        (var-get-place expr2))))))))
 
     ))
 
