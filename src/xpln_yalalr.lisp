@@ -178,7 +178,7 @@
                                      (tac-to-rac (mk-code (append (var-get-code stmt)
                                                                   (var-get-code entries))))))
 
-    (stmts --> stmt END  '#(lambda (stmt END)
+    (stmts --> stmt END  #'(lambda (stmt END)
                              (list (mk-place nil)
                                    (mk-code (var-get-code stmt)))))
     (stmts --> stmts stmt END  '#(lambda (stmts stmt END)
