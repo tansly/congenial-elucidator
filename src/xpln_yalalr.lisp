@@ -178,9 +178,37 @@
                                      (tac-to-rac (mk-code (append (var-get-code stmt)
                                                                   (var-get-code entries))))))
 
+    (stmts --> stmt END  '#(lambda (stmt END)
+                             (list (mk-place nil)
+                                   (mk-code (var-get-code stmt)))))
+    (stmts --> stmts stmt END  '#(lambda (stmts stmt END)
+                                   (list (mk-place nil)
+                                         (mk-code (append (var-get-code stmts)
+                                                          (var-get-code stmt))))))
+
     ;; TODO: Other kinds of statements
     (stmt --> assign  #'(lambda (assign)
                           (identity assign)))
+    (stmt --> ifcond  #'(lambda (ifcond)
+                          (identity ifcond)))
+    (stmt --> ret #'(lambda (ret)
+                      (identity ret)))
+
+    (ret --> K_RET expr  #'(lambda (K_RET expr)
+                            ;; TODO: Code
+                            (list (mk-place nil)
+                                  (mk-code nil))))
+
+    (ifcond --> K_IF conditional stmts K_ENDIF  #'(lambda (K_IF conditional stmts K_ENDIF)
+                                                    ;; TODO: Code
+                                                    (list (mk-place nil)
+                                                          (mk-code nil))))
+
+    (ifcond --> K_IF conditional stmts K_ELSE stmts K_ENDIF
+            '#(lambda (K_IF conditional stmts K_ELSE stmts K_ENDIF)
+                ;; TODO: Code
+                (list (mk-place nil)
+                      (mk-code nil))))
 
     (entries -->  #'(lambda ()
                       (list (mk-place nil)
@@ -270,7 +298,7 @@
 
     ))
 
-(defparameter lexforms '(ID END COLON EQLS LP RP ADD SUB MULT DIV LT))
+(defparameter lexforms '(ID END COLON EQLS LP RP ADD SUB MULT DIV LT K_RET K_IF K_ENDIF K_ELSE))
 
 (defparameter lexicon '(
                         (\; END) ;; all but ID goes in the lexicon
@@ -284,6 +312,10 @@
                         (* MULT)
                         (/ DIV)
                         (< LT)
+                        (RETURN K_RET)
+                        (IF K_IF)
+                        (ENDIF K_ENDIF)
+                        (ELSE K_ELSE)
                         ))
 ;; if you change the end-marker, change its hardcopy above in lexicon above as well.
 ;; (because LALR parser does not evaluate its lexicon symbols---sorry.)
