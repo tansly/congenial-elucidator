@@ -174,43 +174,52 @@
 
 (defparameter grammar
   '(
-    (start --> stmt END entries  #'(lambda (stmt END entries)
-                                     (tac-to-rac (mk-code (append (var-get-code stmt)
-                                                                  (var-get-code entries))))))
+    (start --> stmt END entries
+           #'(lambda (stmt END entries)
+               (tac-to-rac (mk-code (append (var-get-code stmt)
+                                            (var-get-code entries))))))
 
-    (stmts --> stmt END  #'(lambda (stmt END)
-                             (list (mk-place nil)
-                                   (mk-code (var-get-code stmt)))))
-    (stmts --> stmts stmt END  #'(lambda (stmts stmt END)
-                                   (list (mk-place nil)
-                                         (mk-code (append (var-get-code stmts)
-                                                          (var-get-code stmt))))))
+    (stmts --> stmt END
+           #'(lambda (stmt END)
+               (list (mk-place nil)
+                     (mk-code (var-get-code stmt)))))
+    (stmts --> stmts stmt END
+           #'(lambda (stmts stmt END)
+               (list (mk-place nil)
+                     (mk-code (append (var-get-code stmts)
+                                      (var-get-code stmt))))))
 
     ;; TODO: Other kinds of statements
-    (stmt --> assign  #'(lambda (assign)
-                          (identity assign)))
-    (stmt --> ifcond  #'(lambda (ifcond)
-                          (identity ifcond)))
-    (stmt --> ret #'(lambda (ret)
-                      (identity ret)))
+    (stmt --> assign
+          #'(lambda (assign)
+              (identity assign)))
+    (stmt --> ifcond
+          #'(lambda (ifcond)
+              (identity ifcond)))
+    (stmt --> ret
+          #'(lambda (ret)
+              (identity ret)))
 
-    (assign --> ID COLON EQLS expr  #'(lambda (ID COLON EQLS expr)
-                                        (progn
-                                          (mk-sym-entry (t-get-val ID)) ; XXX: The original grammar did not do this.
-                                          (list (mk-place nil)
-                                                (mk-code (append (var-get-code expr)
-                                                                 (mk-2copy (t-get-val ID)
-                                                                           (var-get-place expr))))))))
+    (assign --> ID COLON EQLS expr
+            #'(lambda (ID COLON EQLS expr)
+                (progn
+                  (mk-sym-entry (t-get-val ID)) ; XXX: The original grammar did not do this.
+                  (list (mk-place nil)
+                        (mk-code (append (var-get-code expr)
+                                         (mk-2copy (t-get-val ID)
+                                                   (var-get-place expr))))))))
 
-    (ret --> K_RET expr  #'(lambda (K_RET expr)
-                            ;; TODO: Code
-                            (list (mk-place nil)
-                                  (mk-code nil))))
+    (ret --> K_RET expr
+         #'(lambda (K_RET expr)
+             ;; TODO: Code
+             (list (mk-place nil)
+                   (mk-code nil))))
 
-    (ifcond --> K_IF conditional stmts K_ENDIF  #'(lambda (K_IF conditional stmts K_ENDIF)
-                                                    ;; TODO: Code
-                                                    (list (mk-place nil)
-                                                          (mk-code nil))))
+    (ifcond --> K_IF conditional stmts K_ENDIF
+            #'(lambda (K_IF conditional stmts K_ENDIF)
+                ;; TODO: Code
+                (list (mk-place nil)
+                      (mk-code nil))))
     (ifcond --> K_IF conditional stmts K_ELSE stmts K_ENDIF
             '#(lambda (K_IF conditional stmts K_ELSE stmts K_ENDIF)
                 ;; TODO: Code
@@ -218,24 +227,26 @@
                       (mk-code nil))))
 
     ;; TODO: Other relational operators
-    (conditional --> expr LT expr  #'(lambda (expr1 LT expr2)
-                                       (let ((newplace (newtemp)))
-                                         (mk-sym-entry newplace)
-                                         (list (mk-place newplace)
-                                               (mk-code (append (var-get-code expr1)
-                                                                (var-get-code expr2)
-                                                                (mk-3ac 'lt newplace
-                                                                        (var-get-place expr1)
-                                                                        (var-get-place expr2))))))))
-    (conditional --> expr GT expr  #'(lambda (expr1 GT expr2)
-                                       (let ((newplace (newtemp)))
-                                         (mk-sym-entry newplace)
-                                         (list (mk-place newplace)
-                                               (mk-code (append (var-get-code expr1)
-                                                                (var-get-code expr2)
-                                                                (mk-3ac 'lt newplace
-                                                                        (var-get-place expr2)
-                                                                        (var-get-place expr1))))))))
+    (conditional --> expr LT expr
+                 #'(lambda (expr1 LT expr2)
+                     (let ((newplace (newtemp)))
+                       (mk-sym-entry newplace)
+                       (list (mk-place newplace)
+                             (mk-code (append (var-get-code expr1)
+                                              (var-get-code expr2)
+                                              (mk-3ac 'lt newplace
+                                                      (var-get-place expr1)
+                                                      (var-get-place expr2))))))))
+    (conditional --> expr GT expr
+                 #'(lambda (expr1 GT expr2)
+                     (let ((newplace (newtemp)))
+                       (mk-sym-entry newplace)
+                       (list (mk-place newplace)
+                             (mk-code (append (var-get-code expr1)
+                                              (var-get-code expr2)
+                                              (mk-3ac 'lt newplace
+                                                      (var-get-place expr2)
+                                                      (var-get-place expr1))))))))
     (conditional --> conditional K_AND conditional
                  #'(lambda (cond1 K_AND cond2)
                      (let ((newplace (newtemp)))
@@ -249,72 +260,84 @@
                                                       (var-get-place cond2))))))))
 
     ;; TODO: Function definitions
-    (entry --> stmt  #'(lambda (stmt)
-                         (identity stmt)))
+    (entry --> stmt
+           #'(lambda (stmt)
+               (identity stmt)))
 
-    (entries -->  #'(lambda ()
-                      (list (mk-place nil)
-                            (mk-code nil))))
-    (entries --> entries entry END  #'(lambda (entries entry end)
-                                        (list (mk-place nil)
-                                              (mk-code (append (var-get-code entries)
-                                                               (var-get-code entry))))))
+    (entries -->
+             #'(lambda ()
+                 (list (mk-place nil)
+                       (mk-code nil))))
+    (entries --> entries entry END
+             #'(lambda (entries entry end)
+                 (list (mk-place nil)
+                       (mk-code (append (var-get-code entries)
+                                        (var-get-code entry))))))
 
-    (expr     --> expr ADD term         #'(lambda (expr ADD term)
-                                            (let ((newplace (newtemp)))
-                                              (mk-sym-entry newplace)
-                                              (list (mk-place newplace)
-                                                    (mk-code (append (var-get-code expr)
-                                                                     (var-get-code term)
-                                                                     (mk-3ac 'add newplace
-                                                                             (var-get-place expr)
-                                                                             (var-get-place term))))))))
-    (expr     --> expr SUB term         #'(lambda (expr SUB term)
-                                            (let ((newplace (newtemp)))
-                                              (mk-sym-entry newplace)
-                                              (list (mk-place newplace)
-                                                    (mk-code (append (var-get-code expr)
-                                                                     (var-get-code term)
-                                                                     (mk-3ac 'sub newplace
-                                                                             (var-get-place expr)
-                                                                             (var-get-place term))))))))
-    (expr     --> term               #'(lambda (term)
-                                         (identity term)))
+    (expr --> expr ADD term
+          #'(lambda (expr ADD term)
+              (let ((newplace (newtemp)))
+                (mk-sym-entry newplace)
+                (list (mk-place newplace)
+                      (mk-code (append (var-get-code expr)
+                                       (var-get-code term)
+                                       (mk-3ac 'add newplace
+                                               (var-get-place expr)
+                                               (var-get-place term))))))))
+    (expr --> expr SUB term
+          #'(lambda (expr SUB term)
+              (let ((newplace (newtemp)))
+                (mk-sym-entry newplace)
+                (list (mk-place newplace)
+                      (mk-code (append (var-get-code expr)
+                                       (var-get-code term)
+                                       (mk-3ac 'sub newplace
+                                               (var-get-place expr)
+                                               (var-get-place term))))))))
+    (expr --> term
+          #'(lambda (term)
+              (identity term)))
 
-    (term    --> term MULT factor        #'(lambda (term MULT factor)
-                                             (let ((newplace (newtemp)))
-                                               (mk-sym-entry newplace)
-                                               (list (mk-place newplace)
-                                                     (mk-code (append (var-get-code term)
-                                                                      (var-get-code factor)
-                                                                      (mk-3ac 'mult newplace
-                                                                              (var-get-place term)
-                                                                              (var-get-place factor))))))))
-    (term    --> term DIV factor         #'(lambda (term DIV factor)
-                                             (let ((newplace (newtemp)))
-                                               (mk-sym-entry newplace)
-                                               (list (mk-place newplace)
-                                                     (mk-code (append (var-get-code term)
-                                                                      (var-get-code factor)
-                                                                      (mk-3ac 'div newplace
-                                                                              (var-get-place term)
-                                                                              (var-get-place factor))))))))
-    (term    --> factor                #'(lambda (factor)
-                                           (identity factor)))
+    (term --> term MULT factor
+          #'(lambda (term MULT factor)
+              (let ((newplace (newtemp)))
+                (mk-sym-entry newplace)
+                (list (mk-place newplace)
+                      (mk-code (append (var-get-code term)
+                                       (var-get-code factor)
+                                       (mk-3ac 'mult newplace
+                                               (var-get-place term)
+                                               (var-get-place factor))))))))
+    (term --> term DIV factor
+          #'(lambda (term DIV factor)
+              (let ((newplace (newtemp)))
+                (mk-sym-entry newplace)
+                (list (mk-place newplace)
+                      (mk-code (append (var-get-code term)
+                                       (var-get-code factor)
+                                       (mk-3ac 'div newplace
+                                               (var-get-place term)
+                                               (var-get-place factor))))))))
+    (term --> factor
+          #'(lambda (factor)
+              (identity factor)))
 
-    (factor     --> LP expr RP          #'(lambda (LP expr RP)
-                                            (identity expr)))
-    (factor     --> SUB ID           #'(lambda (SUB ID)
-                                         (let ((newplace (newtemp)))
-                                           (mk-sym-entry newplace)
-                                           (list (mk-place newplace)
-                                                 (mk-code (mk-2ac 'uminus newplace
-                                                                  (t-get-val ID)))))))
-    (factor     --> ID               #'(lambda (ID)
-                                         (progn
-                                           (mk-sym-entry (t-get-val ID))
-                                           (list (mk-place (t-get-val ID))
-                                                 (mk-code nil)))))
+    (factor --> LP expr RP
+            #'(lambda (LP expr RP)
+                (identity expr)))
+    (factor --> SUB ID
+            #'(lambda (SUB ID)
+                (let ((newplace (newtemp)))
+                  (mk-sym-entry newplace)
+                  (list (mk-place newplace)
+                        (mk-code (mk-2ac 'uminus newplace
+                                         (t-get-val ID)))))))
+    (factor --> ID
+            #'(lambda (ID)
+                (progn
+                  (mk-sym-entry (t-get-val ID))
+                  (list (mk-place (t-get-val ID))
+                        (mk-code nil)))))
 
     ))
 
