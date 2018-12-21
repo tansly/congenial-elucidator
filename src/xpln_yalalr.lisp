@@ -60,7 +60,7 @@
 ;;  (2ac op p1 p2)
 ;;  (2copy p1 p1)
 
-(defparameter *tac-to-mips* '((MULT MUL) (DIV DIV)(ADD ADD)(SUB SUB)(UMINUS SUB))) ; intstruction set corr.
+(defparameter *tac-to-mips* '((MULT MUL) (DIV DIV)(ADD ADD)(SUB SUB)(UMINUS SUB)(LT SLT))) ; intstruction set corr.
 
 ;; two functions to get type and value of tokens
 
@@ -201,6 +201,7 @@
                                                 (mk-code (append (var-get-code expr)
                                                                  (mk-2copy (t-get-val ID)
                                                                            (var-get-place expr))))))))
+
     (expr     --> expr ADD term         #'(lambda (expr ADD term)
                                             (let ((newplace (newtemp)))
                                               (mk-sym-entry newplace)
@@ -210,7 +211,6 @@
                                                                      (mk-3ac 'add newplace
                                                                              (var-get-place expr)
                                                                              (var-get-place term))))))))
-
     (expr     --> expr SUB term         #'(lambda (expr SUB term)
                                             (let ((newplace (newtemp)))
                                               (mk-sym-entry newplace)
@@ -257,21 +257,33 @@
                                            (mk-sym-entry (t-get-val ID))
                                            (list (mk-place (t-get-val ID))
                                                  (mk-code nil)))))
+
+    (conditional --> expr LT expr  #'(lambda (expr1 LT expr2)
+                                       (let ((newplace (newtemp)))
+                                         (mk-sym-entry newplace)
+                                         (list (mk-place newplace)
+                                               (mk-code (append (var-get-code expr1)
+                                                                (var-get-code expr2)
+                                                                (mk-3ac 'lt newplace
+                                                                        (var-get-place expr1)
+                                                                        (var-get-place expr2))))))))
+
     ))
 
-(defparameter lexforms '(ID END COLON EQLS LP RP ADD SUB MULT DIV))
+(defparameter lexforms '(ID END COLON EQLS LP RP ADD SUB MULT DIV LT))
 
 (defparameter lexicon '(
                         (\; END) ;; all but ID goes in the lexicon
                         (|:| COLON)
                         (|=| EQLS)
                         (|(| LP)
-                          (|)| RP)
+                        (|)| RP)
                         ($ $)        ; this is for lalrparser.lisp's end of input
                         (+ ADD)
                         (- SUB)
                         (* MULT)
                         (/ DIV)
+                        (< LT)
                         ))
 ;; if you change the end-marker, change its hardcopy above in lexicon above as well.
 ;; (because LALR parser does not evaluate its lexicon symbols---sorry.)
