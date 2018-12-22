@@ -309,6 +309,17 @@
                                                 newplace
                                                 (var-get-place expr2)
                                                 (var-get-place expr1))))))))
+    (rexpr --> expr GT EQLS expr
+           #'(lambda (expr1 GT EQLS expr2)
+               (let ((newplace (newtemp)))
+                 (mk-sym-entry newplace)
+                 (list (mk-place newplace)
+                       (mk-code (append (var-get-code expr1)
+                                        (var-get-code expr2)
+                                        (mk-3ac 'lte
+                                                newplace
+                                                (var-get-place expr2)
+                                                (var-get-place expr1))))))))
 
     ;; TODO: Function definitions
     (entry --> stmt
