@@ -60,7 +60,10 @@
 ;;  (2ac op p1 p2)
 ;;  (2copy p1 p1)
 
-(defparameter *tac-to-mips* '((MULT MUL) (DIV DIV)(ADD ADD)(SUB SUB)(UMINUS SUB)(LT SLT)(AND AND)(NOT NOT)(OR OR))) ; intstruction set corr.
+(defparameter *tac-to-mips* '(
+                              (MULT MUL) (DIV DIV) (ADD ADD) (SUB SUB) (UMINUS SUB)
+                              (LT SLT)
+                              (AND AND) (NOT NOT)(OR OR))) ; intstruction set corr.
 
 ;; two functions to get type and value of tokens
 
@@ -242,16 +245,16 @@
                (identity cterm)))
 
     (cterm --> cterm K_AND cfactor
-                 #'(lambda (cterm K_AND cfactor)
-                     (let ((newplace (newtemp)))
-                       (mk-sym-entry newplace)
-                       (list (mk-place newplace)
-                             (mk-code (append (var-get-code cterm)
-                                              (var-get-code cfactor)
-                                              (mk-3ac 'and
-                                                      newplace
-                                                      (var-get-place cterm)
-                                                      (var-get-place cfactor))))))))
+           #'(lambda (cterm K_AND cfactor)
+               (let ((newplace (newtemp)))
+                 (mk-sym-entry newplace)
+                 (list (mk-place newplace)
+                       (mk-code (append (var-get-code cterm)
+                                        (var-get-code cfactor)
+                                        (mk-3ac 'and
+                                                newplace
+                                                (var-get-place cterm)
+                                                (var-get-place cfactor))))))))
     (cterm --> cfactor
            #'(lambda (cfactor)
                (identity cfactor)))
@@ -260,39 +263,39 @@
              #'(lambda (LP cexpr RP)
                  (identity cexpr)))
     (cfactor --> K_NOT cexpr
-                 #'(lambda (K_NOT cexpr)
-                     (let ((newplace (newtemp)))
-                       (mk-sym-entry newplace)
-                       (list (mk-place newplace)
-                             (mk-code (append (var-get-code cexpr)
-                                              (mk-2ac 'not
-                                                      newplace
-                                                      (var-get-place cexpr))))))))
+             #'(lambda (K_NOT cexpr)
+                 (let ((newplace (newtemp)))
+                   (mk-sym-entry newplace)
+                   (list (mk-place newplace)
+                         (mk-code (append (var-get-code cexpr)
+                                          (mk-2ac 'not
+                                                  newplace
+                                                  (var-get-place cexpr))))))))
     (cfactor --> rexpr
              #'(lambda (rexpr)
                  (identity rexpr)))
 
     ;; TODO: Other relational operators
     (rexpr --> expr LT expr
-                 #'(lambda (expr1 LT expr2)
-                     (let ((newplace (newtemp)))
-                       (mk-sym-entry newplace)
-                       (list (mk-place newplace)
-                             (mk-code (append (var-get-code expr1)
-                                              (var-get-code expr2)
-                                              (mk-3ac 'lt newplace
-                                                      (var-get-place expr1)
-                                                      (var-get-place expr2))))))))
+           #'(lambda (expr1 LT expr2)
+               (let ((newplace (newtemp)))
+                 (mk-sym-entry newplace)
+                 (list (mk-place newplace)
+                       (mk-code (append (var-get-code expr1)
+                                        (var-get-code expr2)
+                                        (mk-3ac 'lt newplace
+                                                (var-get-place expr1)
+                                                (var-get-place expr2))))))))
     (rexpr --> expr GT expr
-                 #'(lambda (expr1 GT expr2)
-                     (let ((newplace (newtemp)))
-                       (mk-sym-entry newplace)
-                       (list (mk-place newplace)
-                             (mk-code (append (var-get-code expr1)
-                                              (var-get-code expr2)
-                                              (mk-3ac 'lt newplace
-                                                      (var-get-place expr2)
-                                                      (var-get-place expr1))))))))
+           #'(lambda (expr1 GT expr2)
+               (let ((newplace (newtemp)))
+                 (mk-sym-entry newplace)
+                 (list (mk-place newplace)
+                       (mk-code (append (var-get-code expr1)
+                                        (var-get-code expr2)
+                                        (mk-3ac 'lt newplace
+                                                (var-get-place expr2)
+                                                (var-get-place expr1))))))))
 
     ;; TODO: Function definitions
     (entry --> stmt
