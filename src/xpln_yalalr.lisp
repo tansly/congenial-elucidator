@@ -62,7 +62,7 @@
 
 (defparameter *tac-to-mips* '(
                               (MULT MUL) (DIV DIV) (ADD ADD) (SUB SUB) (UMINUS SUB)
-                              (LT SLT) (LTE SLE)
+                              (LT SLT) (LTE SLE) (EQ SEQ)
                               (AND AND) (NOT NOT)(OR OR))) ; intstruction set corr.
 
 ;; two functions to get type and value of tokens
@@ -275,7 +275,17 @@
              #'(lambda (rexpr)
                  (identity rexpr)))
 
-    ;; TODO: Other relational operators
+    (rexpr --> expr EQLS EQLS expr
+           #'(lambda (expr1 EQLS1 EQLS2 expr2)
+               (let ((newplace (newtemp)))
+                 (mk-sym-entry newplace)
+                 (list (mk-place newplace)
+                       (mk-code (append (var-get-code expr1)
+                                        (var-get-code expr2)
+                                        (mk-3ac 'eq
+                                                newplace
+                                                (var-get-place expr1)
+                                                (var-get-place expr2))))))))
     (rexpr --> expr LT expr
            #'(lambda (expr1 LT expr2)
                (let ((newplace (newtemp)))
