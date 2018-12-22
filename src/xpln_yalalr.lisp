@@ -62,7 +62,7 @@
 
 (defparameter *tac-to-mips* '(
                               (MULT MUL) (DIV DIV) (ADD ADD) (SUB SUB) (UMINUS SUB)
-                              (LT SLT)
+                              (LT SLT) (LTE SLE)
                               (AND AND) (NOT NOT)(OR OR))) ; intstruction set corr.
 
 ;; two functions to get type and value of tokens
@@ -284,6 +284,17 @@
                        (mk-code (append (var-get-code expr1)
                                         (var-get-code expr2)
                                         (mk-3ac 'lt newplace
+                                                (var-get-place expr1)
+                                                (var-get-place expr2))))))))
+    (rexpr --> expr LT EQLS expr
+           #'(lambda (expr1 LT EQLS expr2)
+               (let ((newplace (newtemp)))
+                 (mk-sym-entry newplace)
+                 (list (mk-place newplace)
+                       (mk-code (append (var-get-code expr1)
+                                        (var-get-code expr2)
+                                        (mk-3ac 'lte
+                                                newplace
                                                 (var-get-place expr1)
                                                 (var-get-place expr2))))))))
     (rexpr --> expr GT expr
