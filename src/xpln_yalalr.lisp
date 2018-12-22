@@ -60,7 +60,7 @@
 ;;  (2ac op p1 p2)
 ;;  (2copy p1 p1)
 
-(defparameter *tac-to-mips* '((MULT MUL) (DIV DIV)(ADD ADD)(SUB SUB)(UMINUS SUB)(LT SLT)(AND AND))) ; intstruction set corr.
+(defparameter *tac-to-mips* '((MULT MUL) (DIV DIV)(ADD ADD)(SUB SUB)(UMINUS SUB)(LT SLT)(AND AND)(NOT NOT))) ; intstruction set corr.
 
 ;; two functions to get type and value of tokens
 
@@ -221,7 +221,7 @@
                 (list (mk-place nil)
                       (mk-code nil))))
     (ifcond --> K_IF conditional stmts K_ELSE stmts K_ENDIF
-            #'(lambda (K_IF conditional stmts K_ELSE stmts K_ENDIF)
+            #'(lambda (K_IF conditional stmts_t K_ELSE stmts_f K_ENDIF)
                 ;; TODO: Code
                 (list (mk-place nil)
                       (mk-code nil))))
@@ -258,6 +258,15 @@
                                                       newplace
                                                       (var-get-place cond1)
                                                       (var-get-place cond2))))))))
+    (conditional --> K_NOT conditional
+                 #'(lambda (K_NOT conditional)
+                     (let ((newplace (newtemp)))
+                       (mk-sym-entry newplace)
+                       (list (mk-place newplace)
+                             (mk-code (append (var-get-code conditional)
+                                              (mk-2ac 'not
+                                                      newplace
+                                                      (var-get-place conditional))))))))
 
     ;; TODO: Function definitions
     (entry --> stmt
@@ -362,6 +371,7 @@
                         (else K_ELSE)
                         (and K_AND)
                         (or K_OR)
+                        (! K_NOT)
                         ))
 ;; if you change the end-marker, change its hardcopy above in lexicon above as well.
 ;; (because LALR parser does not evaluate its lexicon symbols---sorry.)
