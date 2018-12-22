@@ -283,7 +283,8 @@
                  (list (mk-place newplace)
                        (mk-code (append (var-get-code expr1)
                                         (var-get-code expr2)
-                                        (mk-3ac 'lt newplace
+                                        (mk-3ac 'lt
+                                                newplace
                                                 (var-get-place expr1)
                                                 (var-get-place expr2))))))))
     (rexpr --> expr LT EQLS expr
@@ -304,7 +305,8 @@
                  (list (mk-place newplace)
                        (mk-code (append (var-get-code expr1)
                                         (var-get-code expr2)
-                                        (mk-3ac 'lt newplace
+                                        (mk-3ac 'lt
+                                                newplace
                                                 (var-get-place expr2)
                                                 (var-get-place expr1))))))))
 
@@ -330,7 +332,8 @@
                 (list (mk-place newplace)
                       (mk-code (append (var-get-code expr)
                                        (var-get-code term)
-                                       (mk-3ac 'add newplace
+                                       (mk-3ac 'add
+                                               newplace
                                                (var-get-place expr)
                                                (var-get-place term))))))))
     (expr --> expr SUB term
@@ -340,7 +343,8 @@
                 (list (mk-place newplace)
                       (mk-code (append (var-get-code expr)
                                        (var-get-code term)
-                                       (mk-3ac 'sub newplace
+                                       (mk-3ac 'sub
+                                               newplace
                                                (var-get-place expr)
                                                (var-get-place term))))))))
     (expr --> term
@@ -354,7 +358,8 @@
                 (list (mk-place newplace)
                       (mk-code (append (var-get-code term)
                                        (var-get-code factor)
-                                       (mk-3ac 'mult newplace
+                                       (mk-3ac 'mult
+                                               newplace
                                                (var-get-place term)
                                                (var-get-place factor))))))))
     (term --> term DIV factor
@@ -364,7 +369,8 @@
                 (list (mk-place newplace)
                       (mk-code (append (var-get-code term)
                                        (var-get-code factor)
-                                       (mk-3ac 'div newplace
+                                       (mk-3ac 'div
+                                               newplace
                                                (var-get-place term)
                                                (var-get-place factor))))))))
     (term --> factor
