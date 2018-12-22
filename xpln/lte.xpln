@@ -1,0 +1,6 @@
+a := 5;
+if a <= 6
+    return a;
+else
+    return 6;
+endi;
