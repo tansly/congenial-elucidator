@@ -62,7 +62,7 @@
 
 (defparameter *tac-to-mips* '(
                               (MULT MUL) (DIV DIV) (ADD ADD) (SUB SUB) (UMINUS SUB)
-                              (LT SLT) (LTE SLE) (EQ SEQ) (BZ BEQZ)
+                              (LT SLT) (LTE SLE) (EQ SEQ) (BZ BEQZ) (GOTO J)
                               (AND AND) (NOT NOT)(OR OR))) ; intstruction set corr.
 
 ;; two functions to get type and value of tokens
@@ -248,9 +248,24 @@
                                          (mk-label next-label)))))))
     (ifcond --> K_IF cexpr stmts K_ELSE stmts K_ENDIF
             #'(lambda (K_IF cexpr stmts_t K_ELSE stmts_f K_ENDIF)
-                ;; TODO: Code
-                (list (mk-place nil)
-                      (mk-code nil))))
+                (let ((next-label (newtemp))
+                      (false-label (newtemp)))
+                  (list (mk-place nil)
+                        (mk-code (append (var-get-code cexpr)
+                                         (mk-branch 'bz
+                                                    (var-get-place cexpr)
+                                                    false-label)
+                                         (var-get-code stmts_t)
+                                         (mk-branch 'bz
+                                                    ; XXX:
+                                                    ; I don't want to define
+                                                    ; a new instruction for
+                                                    ; unconditional branch.
+                                                    0
+                                                    next-label)
+                                         (mk-label false-label)
+                                         (var-get-code stmts_f)
+                                         (mk-label next-label)))))))
 
     (cexpr --> cexpr K_OR cterm
            #'(lambda (cexpr K_OR cterm)
