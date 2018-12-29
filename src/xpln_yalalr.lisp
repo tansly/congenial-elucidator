@@ -62,7 +62,7 @@
 
 (defparameter *tac-to-mips* '(
                               (MULT MUL) (DIV DIV) (ADD ADD) (SUB SUB) (UMINUS SUB)
-                              (LT SLT) (LTE SLE) (EQ SEQ)
+                              (LT SLT) (LTE SLE) (EQ SEQ) (BZ BEQZ)
                               (AND AND) (NOT NOT)(OR OR))) ; intstruction set corr.
 
 ;; two functions to get type and value of tokens
@@ -130,6 +130,16 @@
     (mk-mips p2 "$t0")
     (format t "~%sw $t0,~A" p1)))
 
+(defun mk-mips-branch (i)
+  (let ((op (tac-get-mips (first i)))
+        (p1 (second i))
+        (p2 (third i)))
+    (mk-mips p1 "$t0")
+    (format t "~%~A $t0,~A" op p2)))
+
+(defun mk-mips-label (i)
+  (format t "~%~A:" i))
+
 (defun map-to-mips (code)
   (create-data-segment)
   (format t "~2%.text~2%") 
@@ -139,6 +149,8 @@
       (cond ((equal itype '3AC) (mk-mips-3ac (rest instruction)))
             ((equal itype '2AC) (mk-mips-2ac (rest instruction)))
             ((equal itype '2COPY) (mk-mips-2copy (rest instruction)))
+            ((equal itype 'LABEL) (mk-mips-label (rest instruction)))
+            ((equal itype 'BRANCH) (mk-mips-branch (rest instruction)))
             (t (format t "unknown TAC code: ~A" instruction))))))
 
 (defun tac-to-rac (code)
@@ -169,6 +181,12 @@
 
 (defun mk-2copy (p1 p2)
   (wrap (list '2copy p1 p2)))
+
+(defun mk-label (p1)
+  (wrap (list 'label p1)))
+
+(defun mk-branch (op p1 p2)
+  (wrap (list 'branch op p1 p2)))
 
 (defun newtemp ()
   (gensym "t-"))       ; returns a new symbol prefixed t- at Lisp run-time
@@ -220,9 +238,14 @@
 
     (ifcond --> K_IF cexpr stmts K_ENDIF
             #'(lambda (K_IF cexpr stmts K_ENDIF)
-                ;; TODO: Code
-                (list (mk-place nil)
-                      (mk-code nil))))
+                (let ((next-label (newtemp)))
+                  (list (mk-place nil)
+                        (mk-code (append (var-get-code cexpr)
+                                         (mk-branch 'bz
+                                                    (var-get-place cexpr)
+                                                    next-label)
+                                         (var-get-code stmts)
+                                         (mk-label next-label)))))))
     (ifcond --> K_IF cexpr stmts K_ELSE stmts K_ENDIF
             #'(lambda (K_IF cexpr stmts_t K_ELSE stmts_f K_ENDIF)
                 ;; TODO: Code
