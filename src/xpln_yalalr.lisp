@@ -217,6 +217,9 @@
     (stmt --> ifcond
           #'(lambda (ifcond)
               (identity ifcond)))
+    (stmt --> wh
+          #'(lambda (wh)
+              (identity wh)))
     (stmt --> ret
           #'(lambda (ret)
               (identity ret)))
@@ -229,6 +232,22 @@
                         (mk-code (append (var-get-code expr)
                                          (mk-2copy (t-get-val ID)
                                                    (var-get-place expr))))))))
+
+    (wh --> K_WHILE cexpr stmts K_ENDWHILE
+        #'(lambda (K_WHILE cexpr stmts K_ENDWHILE)
+            (let ((cond-label (newtemp))
+                  (next-label (newtemp)))
+              (list (mk-place nil)
+                    (mk-code (append (mk-label cond-label)
+                                     (var-get-code cexpr)
+                                     (mk-branch 'bz
+                                                (var-get-place cexpr)
+                                                next-label)
+                                     (var-get-code stmts)
+                                     (mk-branch 'bz
+                                                0
+                                                cond-label)
+                                     (mk-label next-label)))))))
 
     (ret --> K_RET expr
          #'(lambda (K_RET expr)
@@ -455,7 +474,11 @@
 
     ))
 
-(defparameter lexforms '(ID END COLON EQLS LP RP ADD SUB MULT DIV GT LT K_RET K_IF K_ENDIF K_ELSE K_AND K_OR))
+(defparameter
+  lexforms
+  '(ID END COLON EQLS LP RP ADD SUB MULT DIV GT LT
+       K_RET K_IF K_ENDIF K_ELSE K_WHILE K_ENDWHILE
+       K_AND K_OR))
 
 (defparameter lexicon '(
                         (\; END) ;; all but ID goes in the lexicon
@@ -474,6 +497,8 @@
                         (if K_IF)
                         (endi K_ENDIF)
                         (else K_ELSE)
+                        (while K_WHILE)
+                        (endw K_ENDWHILE)
                         (and K_AND)
                         (or K_OR)
                         (! K_NOT)
