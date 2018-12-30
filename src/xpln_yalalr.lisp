@@ -140,6 +140,12 @@
 (defun mk-mips-label (i)
   (format t "~%~A:" i))
 
+(defun mk-mips-readint (i)
+  (let (var (first i))
+    (format t "~%li $v0,5")
+    (format t "~%syscall")
+    (format t "~%sw $v0,~A" var)))
+
 (defun map-to-mips (code)
   (create-data-segment)
   (format t "~2%.text~2%") 
@@ -151,6 +157,8 @@
             ((equal itype '2COPY) (mk-mips-2copy (rest instruction)))
             ((equal itype 'LABEL) (mk-mips-label (rest instruction)))
             ((equal itype 'BRANCH) (mk-mips-branch (rest instruction)))
+            ((equal itype 'INPUT) (mk-mips-readint (rest instruction)))
+            ((equal itype 'OUTPUT) (mk-mips-printint (rest instruction)))
             (t (format t "unknown TAC code: ~A" instruction))))))
 
 (defun tac-to-rac (code)
