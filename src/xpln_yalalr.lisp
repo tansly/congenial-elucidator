@@ -61,9 +61,9 @@
 ;;  (2copy p1 p1)
 
 (defparameter *tac-to-mips* '(
-                              (MULT MUL) (DIV DIV) (ADD ADD) (SUB SUB) (UMINUS SUB)
-                              (LT SLT) (LTE SLE) (EQ SEQ) (BZ BEQZ) (GOTO J)
-                              (AND AND) (NOT NOT)(OR OR))) ; intstruction set corr.
+                              (MULT "mul") (DIV "div") (ADD "add") (SUB "sub") (UMINUS "sub")
+                              (LT "slt") (LTE "sle") (EQ "seq") (BZ "beqz") (GOTO "j")
+                              (AND "and") (NOT "not")(OR "or"))) ; intstruction set corr.
 
 ;; two functions to get type and value of tokens
 
