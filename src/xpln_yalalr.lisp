@@ -141,13 +141,13 @@
   (format t "~%~A:" i))
 
 (defun mk-mips-readint (i)
-  (let (var (first i))
+  (let ((var (first i)))
     (mk-mips 5 "$v0")
     (format t "~%syscall")
     (format t "~%sw $v0,~A" var)))
 
 (defun mk-mips-printint (i)
-  (let (var (first i))
+  (let ((var (first i)))
     (mk-mips 1 "$v0")
     (mk-mips var "$a0")
     (format t "~%syscall")))
