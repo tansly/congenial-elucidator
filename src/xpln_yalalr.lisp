@@ -202,11 +202,11 @@
 (defun mk-branch (op p1 p2)
   (wrap (list 'branch op p1 p2)))
 
-(defun mk-input (op p1 p2)
-  (wrap (list 'input p2)))
+(defun mk-input (var)
+  (wrap (list 'input var)))
 
-(defun mk-output (op p1 p2)
-  (wrap (list 'output p2)))
+(defun mk-output (var)
+  (wrap (list 'output var)))
 
 (defun newtemp ()
   (gensym "t-"))       ; returns a new symbol prefixed t- at Lisp run-time
