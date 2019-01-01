@@ -94,14 +94,14 @@
   If you have more than one block, you need to create .data for each block."
   (format t "~2%.data~%")
   (maphash #'(lambda (key val)
-               (if (equal (sym-get-type val) 'VAR) (format t "~%~A: .word 0" (sym-get-value val))))
+               (if (equal (sym-get-type val) 'VAR) (format t "~%~(~A~): .word 0" (sym-get-value val))))
            *symtab*))
 
 (defun mk-mips (p register)
   "create li if constant or lw if not"
   (if (numberp p)
-    (format t "~%li ~A,~A" register p)
-    (format t "~%lw ~A,~A" register p)))
+    (format t "~%li ~(~A~),~(~A~)" register p)
+    (format t "~%lw ~(~A~),~(~A~)" register p)))
 
 (defun tac-get-mips (op)
   (second (assoc op *tac-to-mips*)))
@@ -113,38 +113,38 @@
         (p3 (fourth i)))
     (mk-mips p2 "$t0")
     (mk-mips p3 "$t1")
-    (format t "~%~A $t0,$t0,$t1" op)
-    (format t "~%sw $t0,~A" p1)))
+    (format t "~%~(~A~) $t0,$t0,$t1" op)
+    (format t "~%sw $t0,~(~A~)" p1)))
 
 (defun mk-mips-2ac (i)
   (let ((op (tac-get-mips (first i)))
         (p1 (second i))
         (p2 (third i)))
     (mk-mips p2 "$t1")
-    (format t "~%~A $t0,$zero,$t1" op)
-    (format t "~%sw $t0,~A" p1)))
+    (format t "~%~(~A~) $t0,$zero,$t1" op)
+    (format t "~%sw $t0,~(~A~)" p1)))
 
 (defun mk-mips-2copy (i)
   (let ((p1 (first i))
         (p2 (second i)))
     (mk-mips p2 "$t0")
-    (format t "~%sw $t0,~A" p1)))
+    (format t "~%sw $t0,~(~A~)" p1)))
 
 (defun mk-mips-branch (i)
   (let ((op (tac-get-mips (first i)))
         (p1 (second i))
         (p2 (third i)))
     (mk-mips p1 "$t0")
-    (format t "~%~A $t0,~A" op p2)))
+    (format t "~%~(~A~) $t0,~(~A~)" op p2)))
 
 (defun mk-mips-label (i)
-  (format t "~%~A:" i))
+  (format t "~%~(~A:~)" i))
 
 (defun mk-mips-readint (i)
   (let ((var (first i)))
     (mk-mips 5 "$v0")
     (format t "~%syscall")
-    (format t "~%sw $v0,~A" var)))
+    (format t "~%sw $v0,~(~A~)" var)))
 
 (defun mk-mips-printint (i)
   (let ((var (first i)))
@@ -165,7 +165,7 @@
             ((equal itype 'BRANCH) (mk-mips-branch (rest instruction)))
             ((equal itype 'INPUT) (mk-mips-readint (rest instruction)))
             ((equal itype 'OUTPUT) (mk-mips-printint (rest instruction)))
-            (t (format t "unknown TAC code: ~A" instruction))))))
+            (t (format t "unknown TAC code: ~(~A~)" instruction))))))
 
 (defun tac-to-rac (code)
   (format t  "~2%TAC code:~2%")
