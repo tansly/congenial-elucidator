@@ -142,9 +142,15 @@
 
 (defun mk-mips-readint (i)
   (let (var (first i))
-    (format t "~%li $v0,5")
+    (mk-mips 5 "$v0")
     (format t "~%syscall")
     (format t "~%sw $v0,~A" var)))
+
+(defun mk-mips-printint (i)
+  (let (var (first i))
+    (mk-mips 1 "$v0")
+    (mk-mips var "$a0")
+    (format t "~%syscall")))
 
 (defun map-to-mips (code)
   (create-data-segment)
@@ -196,6 +202,12 @@
 (defun mk-branch (op p1 p2)
   (wrap (list 'branch op p1 p2)))
 
+(defun mk-input (op p1 p2)
+  (wrap (list 'input p2)))
+
+(defun mk-output (op p1 p2)
+  (wrap (list 'output p2)))
+
 (defun newtemp ()
   (gensym "t-"))       ; returns a new symbol prefixed t- at Lisp run-time
 
@@ -218,7 +230,6 @@
                      (mk-code (append (var-get-code stmts)
                                       (var-get-code stmt))))))
 
-    ;; TODO: Other kinds of statements
     (stmt --> assign
           #'(lambda (assign)
               (identity assign)))
@@ -231,15 +242,32 @@
     (stmt --> ret
           #'(lambda (ret)
               (identity ret)))
+    (stmt --> io
+          #'(lambda (io)
+              (identity io)))
 
     (assign --> ID COLON EQLS expr
             #'(lambda (ID COLON EQLS expr)
                 (progn
-                  (mk-sym-entry (t-get-val ID)) ; XXX: The original grammar did not do this.
+                  (mk-sym-entry (t-get-val ID))
                   (list (mk-place nil)
                         (mk-code (append (var-get-code expr)
                                          (mk-2copy (t-get-val ID)
                                                    (var-get-place expr))))))))
+    
+    (io --> K_INPUT ID
+        #'(lambda (K_INPUT ID)
+            (progn
+              (mk-sym-entry (t-get-val ID))
+              (list (mk-place nil)
+                    (mk-code (mk-input (t-get-val ID)))))))
+
+    (io --> K_OUTPUT ID
+        #'(lambda (K_OUTPUT ID)
+            (progn
+              (mk-sym-entry (t-get-val ID))
+              (list (mk-place nil)
+                    (mk-code (mk-output (t-get-val ID)))))))
 
     (wh --> K_WHILE cexpr stmts K_ENDWHILE
         #'(lambda (K_WHILE cexpr stmts K_ENDWHILE)
@@ -482,11 +510,11 @@
 
     ))
 
-(defparameter
-  lexforms
-  '(ID END COLON EQLS LP RP ADD SUB MULT DIV GT LT
-       K_RET K_IF K_ENDIF K_ELSE K_WHILE K_ENDWHILE
-       K_AND K_OR))
+(defparameter lexforms '(
+                         ID END COLON EQLS LP RP ADD SUB MULT DIV GT LT
+                         K_RET K_IF K_ENDIF K_ELSE K_WHILE K_ENDWHILE
+                         K_AND K_OR
+                         K_INPUT K_OUTPUT))
 
 (defparameter lexicon '(
                         (\; END) ;; all but ID goes in the lexicon
@@ -510,6 +538,8 @@
                         (and K_AND)
                         (or K_OR)
                         (! K_NOT)
+                        (input K_INPUT)
+                        (output K_OUTPUT)
                         ))
 ;; if you change the end-marker, change its hardcopy above in lexicon above as well.
 ;; (because LALR parser does not evaluate its lexicon symbols---sorry.)
