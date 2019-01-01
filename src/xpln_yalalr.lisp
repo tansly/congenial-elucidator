@@ -150,6 +150,13 @@
     (mk-mips var "$a0")
     (format t "~%syscall")))
 
+;; TODO: Implement actual return statement.
+;; For now, it terminates the program by executing the exit syscall.
+(defun mk-mips-return (i)
+  (progn
+    (mk-mips 10 "$v0")
+    (format t "~%syscall")))
+
 (defun create-data-segment ()
   "only for variables; numbers will use li loading rather than lw
   If you have more than one block, you need to create .data for each block."
@@ -169,6 +176,7 @@
             ((equal itype 'BRANCH) (mk-mips-branch (rest instruction)))
             ((equal itype 'INPUT) (mk-mips-readint (rest instruction)))
             ((equal itype 'OUTPUT) (mk-mips-printint (rest instruction)))
+            ((equal itype 'RETURN) (mk-mips-return (rest instruction)))
             (t (format t "unknown TAC code: ~(~A~)" instruction))))))
 
 (defun map-to-mips (code)
@@ -217,6 +225,9 @@
 
 (defun mk-output (var)
   (wrap (list 'output var)))
+
+(defun mk-return (var)
+  (wrap (list 'return var)))
 
 (defun newtemp ()
   (gensym "tmp_"))       ; returns a new symbol prefixed tmp_ at Lisp run-time
@@ -313,9 +324,9 @@
 
     (ret --> K_RET expr
          #'(lambda (K_RET expr)
-             ;; TODO: Code
              (list (mk-place nil)
-                   (mk-code nil))))
+                   (mk-code (append (var-get-code expr)
+                                    (mk-return (var-get-place expr)))))))
 
     (ifcond --> K_IF cexpr stmts K_ENDIF
             #'(lambda (K_IF cexpr stmts K_ENDIF)
