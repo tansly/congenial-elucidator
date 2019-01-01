@@ -247,10 +247,10 @@
                  (list (mk-place nil)
                        (mk-code nil))))
     (defs --> defs def END
-             #'(lambda (entries entry end)
+             #'(lambda (defs def END)
                  (list (mk-place nil)
-                       (mk-code (append (var-get-code entries)
-                                        (var-get-code entry))))))
+                       (mk-code (append (var-get-code defs)
+                                        (var-get-code def))))))
 
     ;; TODO: Function definition
     (def --> stmt
