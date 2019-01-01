@@ -246,16 +246,31 @@
              #'(lambda ()
                  (list (mk-place nil)
                        (mk-code nil))))
-    (defs --> defs def END
+    (defs --> defs def
              #'(lambda (defs def END)
                  (list (mk-place nil)
                        (mk-code (append (var-get-code defs)
                                         (var-get-code def))))))
 
-    ;; TODO: Function definition
-    (def --> stmt
-           #'(lambda (stmt)
-               (identity stmt)))
+    (def --> K_FUN ID fplist stmts K_ENDFUN END
+         #'(lambda (K_FUN ID fplist stmts K_ENDFUN)
+             (progn
+               (incf *blockno*)
+               (list (mk-place nil)
+                     (mk-code (append (mk-label ID)
+                                      (var-get-code stmts)))))))
+
+    (fplist --> LP fargs RP
+            #'(lambda (LP fargs RP)
+                (identity fargs)))
+
+    (fargs -->
+           #'(lambda ()
+               (list (mk-place nil)
+                     (mk-code nil))))
+
+    ;; TODO: Increase block number
+    ;; TODO: Handle local variables
 
     (stmts --> stmt END
            #'(lambda (stmt END)
@@ -536,7 +551,10 @@
                          ID END COLON EQLS LP RP ADD SUB MULT DIV GT LT
                          K_RET K_IF K_ENDIF K_ELSE K_WHILE K_ENDWHILE
                          K_AND K_OR
-                         K_INPUT K_OUTPUT))
+                         K_INPUT K_OUTPUT
+                         K_FUN K_ENDFUN
+                         ARGSEPERATOR
+                         ))
 
 (defparameter lexicon '(
                         (\; END) ;; all but ID goes in the lexicon
@@ -562,6 +580,9 @@
                         (! K_NOT)
                         (input K_INPUT)
                         (output K_OUTPUT)
+                        (fun K_FUN)
+                        (endf K_ENDFUN)
+                        (|,| ARGSEPERATOR)
                         ))
 ;; if you change the end-marker, change its hardcopy above in lexicon above as well.
 ;; (because LALR parser does not evaluate its lexicon symbols---sorry.)
