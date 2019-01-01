@@ -88,15 +88,6 @@
     (pprint instruction))
   t)
 
-
-(defun create-data-segment ()
-  "only for variables; numbers will use li loading rather than lw
-  If you have more than one block, you need to create .data for each block."
-  (format t "~2%.data~%")
-  (maphash #'(lambda (key val)
-               (if (equal (sym-get-type val) 'VAR) (format t "~%~(~A~): .word 0" (sym-get-value val))))
-           *symtab*))
-
 (defun mk-mips (p register)
   "create li if constant or lw if not"
   (if (numberp p)
@@ -152,8 +143,15 @@
     (mk-mips var "$a0")
     (format t "~%syscall")))
 
-(defun map-to-mips (code)
-  (create-data-segment)
+(defun create-data-segment ()
+  "only for variables; numbers will use li loading rather than lw
+  If you have more than one block, you need to create .data for each block."
+  (format t "~2%.data~%")
+  (maphash #'(lambda (key val)
+               (if (equal (sym-get-type val) 'VAR) (format t "~%~(~A~): .word 0" (sym-get-value val))))
+           *symtab*))
+
+(defun create-code-segment (code)
   (format t "~2%.text~2%") 
   (format t "main:~%")
   (dolist (instruction (second code)) ; NB. code is a grammar variable feature (code i1 i2 i3 ...)
@@ -166,6 +164,10 @@
             ((equal itype 'INPUT) (mk-mips-readint (rest instruction)))
             ((equal itype 'OUTPUT) (mk-mips-printint (rest instruction)))
             (t (format t "unknown TAC code: ~(~A~)" instruction))))))
+
+(defun map-to-mips (code)
+  (create-data-segment)
+  (create-code-segment code))
 
 (defun tac-to-rac (code)
   (format t  "~2%TAC code:~2%")
