@@ -132,11 +132,11 @@
         (p1 (second i))
         (p2 (third i)))
     (mk-mips p1 "$t0")
-    (format t "~%~(~A~) $t0,label_~(~A~)" op p2)))
+    (format t "~%~(~A~) $t0,~(~A~)" op p2)))
 
 (defun mk-mips-label (i)
   (let ((label (first i)))
-    (format t "~%label_~(~A:~)" label)))
+    (format t "~%~(~A:~)" label)))
 
 (defun mk-mips-readint (i)
   (let ((var (first i)))
