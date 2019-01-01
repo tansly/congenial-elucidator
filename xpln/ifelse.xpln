@@ -2,7 +2,7 @@ a := 3 * (4 + 5) + 2 * 3;
 if a < 5
     output a;
 else
-    b := a / 5;
+    input b;
     output b;
 endi;
-return a;
+return a + b;
