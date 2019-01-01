@@ -160,7 +160,6 @@
 
 (defun create-code-segment (code)
   (format t "~2%.text~2%") 
-  (format t "main:~%")
   (dolist (instruction (second code)) ; NB. code is a grammar variable feature (code i1 i2 i3 ...)
     (let ((itype (first instruction)))
       (cond ((equal itype '3AC) (mk-mips-3ac (rest instruction)))
@@ -226,10 +225,26 @@
 
 (defparameter grammar
   '(
-    (start --> stmt END entries
-           #'(lambda (stmt END entries)
-               (tac-to-rac (mk-code (append (var-get-code stmt)
-                                            (var-get-code entries))))))
+    (start --> defs stmts
+           #'(lambda (defs stmts)
+               (tac-to-rac (mk-code (append (var-get-code defs)
+                                            (mk-label 'main)
+                                            (var-get-code stmts))))))
+
+    (defs -->
+             #'(lambda ()
+                 (list (mk-place nil)
+                       (mk-code nil))))
+    (defs --> defs def END
+             #'(lambda (entries entry end)
+                 (list (mk-place nil)
+                       (mk-code (append (var-get-code entries)
+                                        (var-get-code entry))))))
+
+    ;; TODO: Function definition
+    (def --> stmt
+           #'(lambda (stmt)
+               (identity stmt)))
 
     (stmts --> stmt END
            #'(lambda (stmt END)
@@ -434,21 +449,6 @@
                                                 newplace
                                                 (var-get-place expr2)
                                                 (var-get-place expr1))))))))
-
-    ;; TODO: Function definitions
-    (entry --> stmt
-           #'(lambda (stmt)
-               (identity stmt)))
-
-    (entries -->
-             #'(lambda ()
-                 (list (mk-place nil)
-                       (mk-code nil))))
-    (entries --> entries entry END
-             #'(lambda (entries entry end)
-                 (list (mk-place nil)
-                       (mk-code (append (var-get-code entries)
-                                        (var-get-code entry))))))
 
     (expr --> expr ADD term
           #'(lambda (expr ADD term)
