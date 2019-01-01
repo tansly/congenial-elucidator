@@ -253,10 +253,28 @@
                                         (var-get-code def))))))
 
     (def --> K_FUN ID fplist stmts K_ENDFUN
-           #'(lambda (K_FUN ID fplist stmts K_ENDFUN)
-               (identity stmts)))
+         #'(lambda (K_FUN ID fplist stmts K_ENDFUN)
+             (progn
+               (incf *blockno*)
+               (list (mk-place nil)
+                     (mk-code (append (mk-label ID)
+                                      (var-get-code stmts)))))))
 
-    ;; TODO: Parameter lists
+    (fplist --> LP fargs RP
+            #'(lambda (LP fargs RP)
+                (identity fargs)))
+
+    (fargs -->
+           #'(lambda ()
+               (list (mk-place nil)
+                     (mk-code nil))))
+    (fargs --> ID
+           #'(lambda (ID)
+               (progn
+                 (mk-sym-entry (t-get-val ID)
+    (fargs --> fargs ARGSEPERATOR ID
+
+
     ;; TODO: Increase block number
     ;; TODO: Handle local variables
 
@@ -541,6 +559,7 @@
                          K_AND K_OR
                          K_INPUT K_OUTPUT
                          K_FUN K_ENDFUN
+                         ARGSEPERATOR
                          ))
 
 (defparameter lexicon '(
@@ -569,6 +588,7 @@
                         (output K_OUTPUT)
                         (fun K_FUN)
                         (endf K_ENDFUN)
+                        (, ARGSEPERATOR)
                         ))
 ;; if you change the end-marker, change its hardcopy above in lexicon above as well.
 ;; (because LALR parser does not evaluate its lexicon symbols---sorry.)
