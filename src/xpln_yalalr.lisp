@@ -33,9 +33,15 @@
 
 (defparameter *blockno* 0)  ;; increment this everytime a new code block (procedure etc.) is entered. 
 
-(defun target-code-mips (input)
+(defun target-code-mips (input &optional (outp nil))
+  "if outp is t, will send it to std out"
   (clrhash *symtab*) ; we need to reset the symbol table for every code gen
   (setf *blockno* 0)
+  (if (or (listp input) (not outp))
+    (setf *outstream* nil)
+    (setf *outstream* (concatenate 'string "target_" input ".s")))
+  (format t "~%Lexical analyzer feed to parser as seen by Lisp reader:~2%~A"
+	  (with-open-file (s input :direction :input :if-does-not-exist :error)(read s)))
   (target-code input))
 
 (defun mk-sym-entry (name)
@@ -167,8 +173,10 @@
             (t (format t "unknown TAC code: ~(~A~)" instruction))))))
 
 (defun map-to-mips (code)
-  (create-data-segment)
-  (create-code-segment code))
+  (if (stringp *outstream*) (dribble *outstream*))  ; open out
+  (create-data-segment) ; uses the symbol table
+  (create-code-segment code)
+  (if (stringp *outstream*) (dribble))) ; must close dribble
 
 (defun tac-to-rac (code)
   (format t  "~2%TAC code:~2%")
