@@ -273,7 +273,6 @@
                (list (mk-place nil)
                      (mk-code nil))))
 
-    ;; TODO: Increase block number
     ;; TODO: Handle local variables
 
     (stmts --> stmt END
