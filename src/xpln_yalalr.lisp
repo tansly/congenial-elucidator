@@ -56,6 +56,9 @@
 (defun sym-get-value (val)
   (second val))
 
+(defun sym-get-block (val)
+  (third val))
+
 ;; SDD section
 ;;
 ;; advice: never use a constant on the RHS of rules, put them in the lexicon and 
@@ -162,8 +165,9 @@
   If you have more than one block, you need to create .data for each block."
   (format t "~2%.data~%")
   (maphash #'(lambda (key val)
-               (if (equal (sym-get-type val) 'VAR) (format t "~%var_~(~A~): .word 0" (sym-get-value val))))
-           *symtab*))
+               (if (equal (sym-get-type val) 'VAR)
+                 (format t "~%~(~A~)~d: .word 0"
+                         (sym-get-value val) (sym-get-block val)))) *symtab*))
 
 (defun create-code-segment (code)
   (format t "~2%.text~2%") 
