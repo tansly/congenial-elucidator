@@ -220,7 +220,7 @@
   (wrap (list 'output var)))
 
 (defun newtemp ()
-  (gensym "tmp_"))       ; returns a new symbol prefixed tmp_ at Lisp run-time
+  (gensym "tmp"))       ; returns a new symbol prefixed tmp_ at Lisp run-time
 
 ;;;; LALR data 
 
