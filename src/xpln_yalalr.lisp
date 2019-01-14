@@ -257,7 +257,7 @@
              (progn
                (incf *blockno*)
                (list (mk-place nil)
-                     (mk-code (append (mk-label ID)
+                     (mk-code (append (mk-label (sym-get-value ID))
                                       (var-get-code stmts)))))))
 
     (fplist --> LP fargs RP
