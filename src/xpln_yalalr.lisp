@@ -46,9 +46,9 @@
 
 (defun mk-sym-entry (name)
   "NB: Lisp hash is collision-free, duplicates just replace the older value."
-  (cond ((numberp name) (setf (gethash (list name *blockno*) *symtab*) (list 'num name)))
-        ((symbolp name) (setf (gethash (list name *blockno*) *symtab*) (list 'var name)))
-        (t (setf (gethash (list name *blockno*) *symtab*) (list 'unknown name)))))
+  (cond ((numberp name) (setf (gethash (list name *blockno*) *symtab*) (list 'num name *blockno*)))
+        ((symbolp name) (setf (gethash (list name *blockno*) *symtab*) (list 'var name *blockno*)))
+        (t (setf (gethash (list name *blockno*) *symtab*) (list 'unknown name *blockno*)))))
 
 (defun sym-get-type (val)
   (first val))
