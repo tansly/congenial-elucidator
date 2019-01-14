@@ -276,7 +276,7 @@
              (progn
                (mk-sym-entry (list (sym-get-value ID)))
                (incf *blockno*)
-               (setf 0 *localoffset*)
+               (setf *localoffset* 0)
                (list (mk-place nil)
                      (mk-code (append (mk-label (sym-get-value ID))
                                       (var-get-code stmts)))))))
