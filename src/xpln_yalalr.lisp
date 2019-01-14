@@ -246,13 +246,13 @@
              #'(lambda ()
                  (list (mk-place nil)
                        (mk-code nil))))
-    (defs --> defs def END
+    (defs --> defs def
              #'(lambda (defs def END)
                  (list (mk-place nil)
                        (mk-code (append (var-get-code defs)
                                         (var-get-code def))))))
 
-    (def --> K_FUN ID fplist stmts K_ENDFUN
+    (def --> K_FUN ID fplist stmts K_ENDFUN END
          #'(lambda (K_FUN ID fplist stmts K_ENDFUN)
              (progn
                (incf *blockno*)
