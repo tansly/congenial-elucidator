@@ -140,7 +140,7 @@
 (defun mk-mips-label (i)
   (let ((label (first i)))
     (let ((blockn (sym-get-block (gethash (list label) *symtab* '(NIL NIL *blockno*)))))
-      (setf blockn *blockno*)
+      (setf *blockno* blockn)
       (format t "~%~(~A:~)" label))))
 
 (defun mk-mips-readint (i)
