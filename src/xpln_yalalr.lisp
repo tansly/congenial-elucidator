@@ -48,7 +48,7 @@
   "NB: Lisp hash is collision-free, duplicates just replace the older value."
   (cond ((numberp name) (setf (gethash (list name *blockno*) *symtab*) (list 'num name *blockno*)))
         ((symbolp name) (setf (gethash (list name *blockno*) *symtab*) (list 'var name *blockno*)))
-        (t (setf (gethash (list name *blockno*) *symtab*) (list 'unknown name *blockno*)))))
+        (t (setf (gethash name *symtab*) (list 'fun name *blockno*)))))
 
 (defun sym-get-type (val)
   (first val))
@@ -139,7 +139,9 @@
 
 (defun mk-mips-label (i)
   (let ((label (first i)))
-    (format t "~%~(~A:~)" label)))
+    (let ((blockn (sym-get-block (gethash (list label) *symtab* '(NIL NIL *blockno*)))))
+      (setq *blockno* blockn)
+      (format t "~%~(~A:~)" label))))
 
 (defun mk-mips-readint (i)
   (let ((var (first i)))
@@ -190,6 +192,7 @@
   (if (stringp *outstream*) (dribble))) ; must close dribble
 
 (defun tac-to-rac (code)
+  (maphash #'(lambda (key val)(format t "~%~A : ~A" key val)) *symtab*)
   (format t  "~2%TAC code:~2%")
   (pprint-code code)
   (format t "~2%MIPS-style code using register ops only:~2%")
@@ -242,6 +245,7 @@
   '(
     (start --> defs stmts
            #'(lambda (defs stmts)
+               (mk-sym-entry (list 'main))
                (tac-to-rac (mk-code (append (var-get-code defs)
                                             (mk-label 'main)
                                             (var-get-code stmts))))))
@@ -259,6 +263,7 @@
     (def --> K_FUN ID fplist stmts K_ENDFUN END
          #'(lambda (K_FUN ID fplist stmts K_ENDFUN END)
              (progn
+               (mk-sym-entry (list (sym-get-value ID)))
                (incf *blockno*)
                (list (mk-place nil)
                      (mk-code (append (mk-label (sym-get-value ID))
