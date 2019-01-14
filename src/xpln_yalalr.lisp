@@ -101,7 +101,7 @@
   "create li if constant or lw if not"
   (if (numberp p)
     (format t "~%li ~(~A~),~(~A~)" register p)
-    (format t "~%lw ~(~A~),var_~(~A~)" register p)))
+    (format t "~%lw ~(~A~),~(~A~)~d" register p *blockno*)))
 
 (defun tac-get-mips (op)
   (second (assoc op *tac-to-mips*)))
@@ -114,7 +114,7 @@
     (mk-mips p2 "$t0")
     (mk-mips p3 "$t1")
     (format t "~%~(~A~) $t0,$t0,$t1" op)
-    (format t "~%sw $t0,var_~(~A~)" p1)))
+    (format t "~%sw $t0,~(~A~)~d" p1 *blockno*)))
 
 (defun mk-mips-2ac (i)
   (let ((op (tac-get-mips (first i)))
@@ -122,13 +122,13 @@
         (p2 (third i)))
     (mk-mips p2 "$t1")
     (format t "~%~(~A~) $t0,$zero,$t1" op)
-    (format t "~%sw $t0,var_~(~A~)" p1)))
+    (format t "~%sw $t0,~(~A~)~d" p1 *blockno*)))
 
 (defun mk-mips-2copy (i)
   (let ((p1 (first i))
         (p2 (second i)))
     (mk-mips p2 "$t0")
-    (format t "~%sw $t0,var_~(~A~)" p1)))
+    (format t "~%sw $t0,~(~A~)~d" p1 *blockno*)))
 
 (defun mk-mips-branch (i)
   (let ((op (tac-get-mips (first i)))
@@ -140,14 +140,14 @@
 (defun mk-mips-label (i)
   (let ((label (first i)))
     (let ((blockn (sym-get-block (gethash (list label) *symtab* '(NIL NIL *blockno*)))))
-      (setq *blockno* blockn)
+      (setf blockn *blockno*)
       (format t "~%~(~A:~)" label))))
 
 (defun mk-mips-readint (i)
   (let ((var (first i)))
     (mk-mips 5 "$v0")
     (format t "~%syscall")
-    (format t "~%sw $v0,var_~(~A~)" var)))
+    (format t "~%sw $v0,~(~A~)~d" var *blockno*)))
 
 (defun mk-mips-printint (i)
   (let ((var (first i)))
