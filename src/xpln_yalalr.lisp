@@ -268,12 +268,6 @@
            #'(lambda ()
                (list (mk-place nil)
                      (mk-code nil))))
-    (fargs --> ID
-           #'(lambda (ID)
-               (progn
-                 (mk-sym-entry (t-get-val ID)
-    (fargs --> fargs ARGSEPERATOR ID
-
 
     ;; TODO: Increase block number
     ;; TODO: Handle local variables
@@ -588,7 +582,7 @@
                         (output K_OUTPUT)
                         (fun K_FUN)
                         (endf K_ENDFUN)
-                        (, ARGSEPERATOR)
+                        (|,| ARGSEPERATOR)
                         ))
 ;; if you change the end-marker, change its hardcopy above in lexicon above as well.
 ;; (because LALR parser does not evaluate its lexicon symbols---sorry.)
