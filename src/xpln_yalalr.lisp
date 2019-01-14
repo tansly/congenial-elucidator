@@ -33,6 +33,8 @@
 
 (defparameter *blockno* 0)  ;; increment this everytime a new code block (procedure etc.) is entered. 
 
+(defparameter *localoffset* 0)
+
 (defun target-code-mips (input &optional (outp nil))
   "if outp is t, will send it to std out"
   (clrhash *symtab*) ; we need to reset the symbol table for every code gen
@@ -46,8 +48,11 @@
 
 (defun mk-sym-entry (name)
   "NB: Lisp hash is collision-free, duplicates just replace the older value."
-  (cond ((numberp name) (setf (gethash (list name *blockno*) *symtab*) (list 'num name *blockno*)))
-        ((symbolp name) (setf (gethash (list name *blockno*) *symtab*) (list 'var name *blockno*)))
+  (cond ((numberp name)
+         (setf (gethash (list name *blockno*) *symtab*) (list 'num name *blockno*)))
+        ((symbolp name)
+         (setf (gethash (list name *blockno*) *symtab*) (list 'var name *blockno* *localoffset*))
+         (incf *localoffset* 4))
         (t (setf (gethash name *symtab*) (list 'fun name *blockno*)))))
 
 (defun sym-get-type (val)
@@ -58,6 +63,9 @@
 
 (defun sym-get-block (val)
   (third val))
+
+(defun sym-get-offset (val)
+  (fourth val))
 
 ;; SDD section
 ;;
@@ -169,8 +177,10 @@
   (format t "~2%.data~%")
   (maphash #'(lambda (key val)
                (if (equal (sym-get-type val) 'VAR)
-                 (format t "~%~(~A~)~d: .word 0"
-                         (sym-get-value val) (sym-get-block val)))) *symtab*))
+                 (format t "~%~(~A~)~d: .word ~d"
+                         (sym-get-value val)
+                         (sym-get-block val)
+                         (sym-get-offset val)))) *symtab*))
 
 (defun create-code-segment (code)
   (format t "~2%.text~2%") 
@@ -266,6 +276,7 @@
              (progn
                (mk-sym-entry (list (sym-get-value ID)))
                (incf *blockno*)
+               (setf 0 *localoffset*)
                (list (mk-place nil)
                      (mk-code (append (mk-label (sym-get-value ID))
                                       (var-get-code stmts)))))))
