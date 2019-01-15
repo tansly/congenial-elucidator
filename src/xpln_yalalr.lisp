@@ -162,7 +162,8 @@
   (let ((var (first i)))
     (mk-mips 5 "$v0")
     (format t "~%syscall")
-    (format t "~%sw $v0,~(~A~)~d" var *blockno*)))
+    (format t "~%sub $t7,$fp,~(~A~)~d" var *blockno*)
+    (format t "~%sw $v0,($t7)")))
 
 (defun mk-mips-printint (i)
   (let ((var (first i)))
