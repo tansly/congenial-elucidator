@@ -156,7 +156,15 @@
     (let ((blockn (sym-get-block (gethash (list label) *symtab*))))
       (if blockn
         (setf *blockno* blockn))
-      (format t "~%~(~A:~)" label))))
+      (format t "~%~(~A:~)" label)
+      ;; XXX: Dirty hack
+      ;; Not all labels are functions. But we do not distinguish
+      ;; function labels from ordinary jump labels, so at every
+      ;; label we save the return address register to the stack
+      ;; because we need it if the label is a function.
+      ;; Of course, most of these saves will be spurious
+      ;; but will not cause any harm.
+      (format t "~%sw $ra,($sp)"))))
 
 (defun mk-mips-readint (i)
   (let ((var (first i)))
@@ -170,6 +178,16 @@
     (mk-mips 1 "$v0")
     (mk-mips var "$a0")
     (format t "~%syscall")))
+
+(defun mk-mips-call (i)
+  (let ((fun (first i)))
+    ;; XXX: Stack frames are fixed to 256 bytes of size.
+    ;; TODO: Determine the size of the stack frame dynamically.
+    (format t "~%sw $fp,4($sp)")
+    (format t "~%lw $fp,$sp")
+    (format t "~%li $t0,256")
+    (format t "~%sub $sp,$sp,$t0")
+    (format t "~%jal ~(~A~)" fun)))
 
 ;; TODO: Implement actual return statement.
 ;; For now, it terminates the program by executing the exit syscall.
@@ -200,6 +218,7 @@
             ((equal itype 'BRANCH) (mk-mips-branch (rest instruction)))
             ((equal itype 'INPUT) (mk-mips-readint (rest instruction)))
             ((equal itype 'OUTPUT) (mk-mips-printint (rest instruction)))
+            ((equal itype 'CALL) (mk-mips-call (rest instruction)))
             ((equal itype 'RETURN) (mk-mips-return (rest instruction)))
             (t (format t "unknown TAC code: ~(~A~)" instruction))))))
 
@@ -250,6 +269,9 @@
 
 (defun mk-output (var)
   (wrap (list 'output var)))
+
+(defun mk-call (var)
+  (wrap (list 'call var)))
 
 (defun mk-return (var)
   (wrap (list 'return var)))
