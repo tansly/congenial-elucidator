@@ -111,7 +111,9 @@
   "create li if constant or lw if not"
   (if (numberp p)
     (format t "~%li ~(~A~),~(~A~)" register p)
-    (format t "~%lw ~(~A~),~(~A~)~d" register p *blockno*)))
+    (progn
+      (format t "~%sub $t7,$fp,~(~A~)~d" p *blockno*)
+      (format t "~%lw ~(~A~),($t7)" register))))
 
 (defun tac-get-mips (op)
   (second (assoc op *tac-to-mips*)))
