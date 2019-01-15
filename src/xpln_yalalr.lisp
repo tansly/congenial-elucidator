@@ -134,7 +134,8 @@
         (p2 (third i)))
     (mk-mips p2 "$t1")
     (format t "~%~(~A~) $t0,$zero,$t1" op)
-    (format t "~%sw $t0,~(~A~)~d" p1 *blockno*)))
+    (format t "~%sub $t7,$fp,~(~A~)~d" p1 *blockno*)
+    (format t "~%sw $t0,($t7)")))
 
 (defun mk-mips-2copy (i)
   (let ((p1 (first i))
