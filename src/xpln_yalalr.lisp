@@ -180,21 +180,28 @@
     (format t "~%syscall")))
 
 (defun mk-mips-call (i)
-  (let ((fun (first i)))
+  (let ((fun (first i))
+        (retplace (second i)))
     ;; XXX: Stack frames are fixed to 256 bytes of size.
     ;; TODO: Determine the size of the stack frame dynamically.
     (format t "~%sw $fp,4($sp)")
     (format t "~%lw $fp,$sp")
     (format t "~%li $t0,256")
     (format t "~%sub $sp,$sp,$t0")
-    (format t "~%jal ~(~A~)" fun)))
+    (format t "~%jal ~(~A~)" fun)
+    ;; After return
+    ;; Restore stack and frame pointers
+    (format t "~%sw $fp,$sp")
+    (format t "~%lw $fp,4($sp)")
+    ;; Save the return value
+    (format t "~%sub $t7,$fp,~(~A~)~d" retplace *blockno*)
+    (format t "~%sw $v0,($t7)")))
 
-;; TODO: Implement actual return statement.
-;; For now, it terminates the program by executing the exit syscall.
 (defun mk-mips-return (i)
-  (progn
-    (mk-mips 10 "$v0")
-    (format t "~%syscall")))
+  (let ((retexpr (first i)))
+    (mk-mips retexpr "$v0")
+    (format t "~%lw $ra,($sp)")
+    (format t "~%jr $ra")))
 
 (defun create-data-segment ()
   "only for variables; numbers will use li loading rather than lw
@@ -270,8 +277,8 @@
 (defun mk-output (var)
   (wrap (list 'output var)))
 
-(defun mk-call (var)
-  (wrap (list 'call var)))
+(defun mk-call (fun retplace)
+  (wrap (list 'call fun retplace)))
 
 (defun mk-return (var)
   (wrap (list 'return var)))
@@ -322,9 +329,10 @@
 
     (fcall --> ID aplist
            #'(lambda (ID aplist)
-               ;; TODO
-               (list (mk-place nil)
-                     (mk-code nil))))
+               (let ((retplace (newtemp)))
+                 (mk-sym-entry retplace)
+                 (list (mk-place retplace)
+                       (mk-code (mk-call (t-get-val ID) retplace))))))
 
     (aplist --> LP aargs RP
             #'(lambda (LP aargs RP)
