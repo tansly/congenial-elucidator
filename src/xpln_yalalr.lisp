@@ -296,8 +296,23 @@
            #'(lambda ()
                (list (mk-place nil)
                      (mk-code nil))))
+    ;; TODO: Non-empty argument list
 
-    ;; TODO: Handle local variables
+    (fcall --> ID aplist
+           #'(lambda (ID aplist)
+               ;; TODO
+               (list (mk-place nil)
+                     (mk-code nil))))
+
+    (aplist --> LP aargs RP
+            #'(lambda (LP aargs RP)
+                (identity aargs)))
+
+    (aargs -->
+           #'(lambda ()
+               (list (mk-place nil)
+                     (mk-code nil))))
+    ;; TODO: Non-empty argument list
 
     (stmts --> stmt END
            #'(lambda (stmt END)
@@ -558,6 +573,9 @@
     (factor --> LP expr RP
             #'(lambda (LP expr RP)
                 (identity expr)))
+    (factor --> fcall
+            #'(lambda (fcall)
+                (identity fcall)))
     (factor --> SUB ID
             #'(lambda (SUB ID)
                 (let ((newplace (newtemp)))
