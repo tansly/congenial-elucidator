@@ -52,8 +52,9 @@
          (setf (gethash (list name *blockno*) *symtab*) (list 'num name *blockno*)))
         ((symbolp name)
          (if (not (gethash (list name *blockno*) *symtab*))
-           (setf (gethash (list name *blockno*) *symtab*) (list 'var name *blockno* *localoffset*))
-           (incf *localoffset* 4)))
+           (progn
+             (setf (gethash (list name *blockno*) *symtab*) (list 'var name *blockno* *localoffset*))
+             (incf *localoffset* 4))))
         (t (setf (gethash name *symtab*) (list 'fun name *blockno*)))))
 
 (defun sym-get-type (val)
