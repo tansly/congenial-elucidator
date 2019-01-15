@@ -141,7 +141,8 @@
   (let ((p1 (first i))
         (p2 (second i)))
     (mk-mips p2 "$t0")
-    (format t "~%sw $t0,~(~A~)~d" p1 *blockno*)))
+    (format t "~%sub $t7,$fp,~(~A~)~d" p1 *blockno*)
+    (format t "~%sw $t0,($t7)")))
 
 (defun mk-mips-branch (i)
   (let ((op (tac-get-mips (first i)))
