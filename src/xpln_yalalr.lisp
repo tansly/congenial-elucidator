@@ -111,7 +111,9 @@
   "create li if constant or lw if not"
   (if (numberp p)
     (format t "~%li ~(~A~),~(~A~)" register p)
-    (format t "~%lw ~(~A~),~(~A~)~d" register p *blockno*)))
+    (progn
+      (format t "~%sub $t7,$fp,~(~A~)~d" p *blockno*)
+      (format t "~%lw ~(~A~),($t7)" register))))
 
 (defun tac-get-mips (op)
   (second (assoc op *tac-to-mips*)))
@@ -132,13 +134,15 @@
         (p2 (third i)))
     (mk-mips p2 "$t1")
     (format t "~%~(~A~) $t0,$zero,$t1" op)
-    (format t "~%sw $t0,~(~A~)~d" p1 *blockno*)))
+    (format t "~%sub $t7,$fp,~(~A~)~d" p1 *blockno*)
+    (format t "~%sw $t0,($t7)")))
 
 (defun mk-mips-2copy (i)
   (let ((p1 (first i))
         (p2 (second i)))
     (mk-mips p2 "$t0")
-    (format t "~%sw $t0,~(~A~)~d" p1 *blockno*)))
+    (format t "~%sub $t7,$fp,~(~A~)~d" p1 *blockno*)
+    (format t "~%sw $t0,($t7)")))
 
 (defun mk-mips-branch (i)
   (let ((op (tac-get-mips (first i)))
@@ -158,7 +162,8 @@
   (let ((var (first i)))
     (mk-mips 5 "$v0")
     (format t "~%syscall")
-    (format t "~%sw $v0,~(~A~)~d" var *blockno*)))
+    (format t "~%sub $t7,$fp,~(~A~)~d" var *blockno*)
+    (format t "~%sw $v0,($t7)")))
 
 (defun mk-mips-printint (i)
   (let ((var (first i)))
