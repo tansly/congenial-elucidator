@@ -108,12 +108,17 @@
   t)
 
 (defun mk-mips (p register)
-  "create li if constant or lw if not"
   (if (numberp p)
     (format t "~%li ~(~A~),~(~A~)" register p)
     (progn
-      (format t "~%sub $t7,$fp,~(~A~)~d" p *blockno*)
-      (format t "~%lw ~(~A~),($t7)" register))))
+      (format t "~%lw ~(~A~),~(~A~)~d" register p *blockno*)
+      (format t "~%sub ~(~A~),$fp,~(~A~)" register register)
+      (format t "~%lw ~(~A~),(~(~A~))" register register))))
+
+(defun mk-mips-lea (p register)
+  (progn
+    (format t "~%lw ~(~A~),~(~A~)~d" register p *blockno*)
+    (format t "~%sub ~(~A~),$fp,~(~A~)" register register)))
 
 (defun tac-get-mips (op)
   (second (assoc op *tac-to-mips*)))
@@ -134,14 +139,14 @@
         (p2 (third i)))
     (mk-mips p2 "$t1")
     (format t "~%~(~A~) $t0,$zero,$t1" op)
-    (format t "~%sub $t7,$fp,~(~A~)~d" p1 *blockno*)
+    (mk-mips-lea p1 "$t7")
     (format t "~%sw $t0,($t7)")))
 
 (defun mk-mips-2copy (i)
   (let ((p1 (first i))
         (p2 (second i)))
     (mk-mips p2 "$t0")
-    (format t "~%sub $t7,$fp,~(~A~)~d" p1 *blockno*)
+    (mk-mips-lea p1 "$t7")
     (format t "~%sw $t0,($t7)")))
 
 (defun mk-mips-branch (i)
@@ -170,7 +175,7 @@
   (let ((var (first i)))
     (mk-mips 5 "$v0")
     (format t "~%syscall")
-    (format t "~%sub $t7,$fp,~(~A~)~d" var *blockno*)
+    (mk-mips-lea var "$t7")
     (format t "~%sw $v0,($t7)")))
 
 (defun mk-mips-printint (i)
@@ -194,7 +199,7 @@
     (format t "~%sw $fp,$sp")
     (format t "~%lw $fp,4($sp)")
     ;; Save the return value
-    (format t "~%sub $t7,$fp,~(~A~)~d" retplace *blockno*)
+    (mk-mips-lea retplace "$t7")
     (format t "~%sw $v0,($t7)")))
 
 (defun mk-mips-return (i)
