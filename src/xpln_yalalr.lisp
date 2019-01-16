@@ -162,7 +162,15 @@
       (if blockn
         (setf *blockno* blockn))
       (format t "~%~(~A:~)" label)
-      ;; XXX: Dirty hack
+      (if (string-equal label "main")
+        ;; XXX: Temporary hack
+        ;; Set up the stack frame for the main function and initialize
+        ;; the frame pointer.
+        (progn
+          (format t "~%move $fp,$sp")
+          (format t "~%li $t0,256")
+          (format t "~%sub $sp,$sp,$t0")))
+      ;; XXX: Temporary hack
       ;; Not all labels are functions. But we do not distinguish
       ;; function labels from ordinary jump labels, so at every
       ;; label we save the return address register to the stack
