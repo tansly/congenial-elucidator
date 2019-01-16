@@ -209,16 +209,15 @@
     (format t "~%lw $ra,($sp)")
     (format t "~%jr $ra")))
 
-(defun mk-mips-entry ()
-  ;; Set up the stack frame for the main function and initialize
-  ;; the frame pointer.
-  (progn
+(defun mk-mips-entry (i)
+  (let ((retplace (first i)))
+    ;; Set up the stack frame for the main function and initialize
+    ;; the frame pointer.
+    (format t "~%main:")
     (format t "~%move $fp,$sp")
     (format t "~%li $t0,256")
-    (format t "~%sub $sp,$sp,$t0")))
-
-(defun mk-mips-exit ()
-  (progn
+    (format t "~%sub $sp,$sp,$t0")
+    (mk-mips-call (list 'mainbody retplace))
     (format t "~%li $v0,10")
     (format t "~%syscall")))
 
@@ -246,8 +245,7 @@
             ((equal itype 'OUTPUT) (mk-mips-printint (rest instruction)))
             ((equal itype 'CALL) (mk-mips-call (rest instruction)))
             ((equal itype 'RETURN) (mk-mips-return (rest instruction)))
-            ((equal itype 'ENTRY) (mk-mips-entry))
-            ((equal itype 'EXIT) (mk-mips-exit))
+            ((equal itype 'ENTRY) (mk-mips-entry (rest instruction)))
             (t (format t "unknown TAC code: ~(~A~)" instruction))))))
 
 (defun map-to-mips (code)
@@ -304,8 +302,8 @@
 (defun mk-return (var)
   (wrap (list 'return var)))
 
-(defun mk-entry ()
-  (wrap (list 'entry)))
+(defun mk-entry (var)
+  (wrap (list 'entry var)))
 
 (defun mk-exit ()
   (wrap (list 'exit)))
@@ -320,14 +318,13 @@
     (start --> defs stmts
            #'(lambda (defs stmts)
                (let ((retplace (newtemp)))
+                 ;; XXX: Temporary hack
+                 (decf *blockno*)
                  (mk-sym-entry retplace)
-                 (mk-sym-entry (list 'main))
+                 (incf *blockno*)
                  (mk-sym-entry (list 'mainbody))
                  (tac-to-rac (mk-code (append (var-get-code defs)
-                                              (mk-entry)
-                                              (mk-label 'main)
-                                              (mk-call 'mainbody retplace)
-                                              (mk-exit)
+                                              (mk-entry retplace)
                                               (mk-label 'mainbody)
                                               (var-get-code stmts)))))))
 
