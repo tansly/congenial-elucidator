@@ -112,12 +112,14 @@
     (format t "~%li ~(~A~),~(~A~)" register p)
     (progn
       (format t "~%lw ~(~A~),~(~A~)~d" register p *blockno*)
+      (format t "~%addi ~(~A~),~(~A~),4" register register)
       (format t "~%sub ~(~A~),$fp,~(~A~)" register register)
       (format t "~%lw ~(~A~),(~(~A~))" register register))))
 
 (defun mk-mips-lea (p register)
   (progn
     (format t "~%lw ~(~A~),~(~A~)~d" register p *blockno*)
+    (format t "~%addi ~(~A~),~(~A~),4" register register)
     (format t "~%sub ~(~A~),$fp,~(~A~)" register register)))
 
 (defun tac-get-mips (op)
