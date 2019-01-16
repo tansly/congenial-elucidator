@@ -297,10 +297,15 @@
   '(
     (start --> defs stmts
            #'(lambda (defs stmts)
-               (mk-sym-entry (list 'main))
-               (tac-to-rac (mk-code (append (var-get-code defs)
-                                            (mk-label 'main)
-                                            (var-get-code stmts))))))
+               (let ((retplace (newtemp)))
+                 (mk-sym-entry retplace)
+                 (mk-sym-entry (list 'main))
+                 (mk-sym-entry (list 'mainbody))
+                 (tac-to-rac (mk-code (append (var-get-code defs)
+                                              (mk-label 'main)
+                                              (mk-call 'mainbody retplace)
+                                              (mk-label 'mainbody)
+                                              (var-get-code stmts)))))))
 
     (defs -->
              #'(lambda ()
