@@ -1,0 +1,27 @@
+fun f()
+    input x;
+    if x < 10
+        x := x * 5;
+    else
+        x := x + 5;
+    endi;
+    output x;
+    return x;
+endf;
+
+fun g()
+    input x;
+    if x < 10
+        x := x * 5;
+    else
+        x := x + 5;
+    endi;
+    output x;
+    return x;
+endf;
+
+x := f();
+y := g();
+z := x + y;
+output z;
+return z;
