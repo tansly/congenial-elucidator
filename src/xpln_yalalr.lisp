@@ -163,14 +163,6 @@
       (if blockn
         (setf *blockno* blockn))
       (format t "~%~(~A:~)" label)
-      (if (string-equal label "main")
-        ;; XXX: Temporary hack
-        ;; Set up the stack frame for the main function and initialize
-        ;; the frame pointer.
-        (progn
-          (format t "~%move $fp,$sp")
-          (format t "~%li $t0,256")
-          (format t "~%sub $sp,$sp,$t0")))
       ;; XXX: Temporary hack
       ;; Not all labels are functions. But we do not distinguish
       ;; function labels from ordinary jump labels, so at every
@@ -217,6 +209,19 @@
     (format t "~%lw $ra,($sp)")
     (format t "~%jr $ra")))
 
+(defun mk-mips-entry ()
+  ;; Set up the stack frame for the main function and initialize
+  ;; the frame pointer.
+  (progn
+    (format t "~%move $fp,$sp")
+    (format t "~%li $t0,256")
+    (format t "~%sub $sp,$sp,$t0")))
+
+(defun mk-mips-exit ()
+  (progn
+    (format t "~%li $v0,10")
+    (format t "~%syscall")))
+
 (defun create-data-segment ()
   "only for variables; numbers will use li loading rather than lw
   If you have more than one block, you need to create .data for each block."
@@ -241,6 +246,8 @@
             ((equal itype 'OUTPUT) (mk-mips-printint (rest instruction)))
             ((equal itype 'CALL) (mk-mips-call (rest instruction)))
             ((equal itype 'RETURN) (mk-mips-return (rest instruction)))
+            ((equal itype 'ENTRY) (mk-mips-entry))
+            ((equal itype 'EXIT) (mk-mips-exit))
             (t (format t "unknown TAC code: ~(~A~)" instruction))))))
 
 (defun map-to-mips (code)
@@ -297,6 +304,12 @@
 (defun mk-return (var)
   (wrap (list 'return var)))
 
+(defun mk-entry ()
+  (wrap (list 'entry)))
+
+(defun mk-exit ()
+  (wrap (list 'exit)))
+
 (defun newtemp ()
   (gensym "tmp"))       ; returns a new symbol prefixed tmp_ at Lisp run-time
 
@@ -311,8 +324,10 @@
                  (mk-sym-entry (list 'main))
                  (mk-sym-entry (list 'mainbody))
                  (tac-to-rac (mk-code (append (var-get-code defs)
+                                              (mk-entry)
                                               (mk-label 'main)
                                               (mk-call 'mainbody retplace)
+                                              (mk-exit)
                                               (mk-label 'mainbody)
                                               (var-get-code stmts)))))))
 
