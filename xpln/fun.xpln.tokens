@@ -11,17 +11,16 @@ endf |;|
 
 fun g |(|  |)| 
     input x |;| 
-    if x  |<|  10
-        x  |:|  |=|  x  |*|  5 |;| 
-    else
-        x  |:|  |=|  x  |+|  5 |;| 
-    endi |;| 
-    output x |;| 
-    return x |;| 
+    y  |:|  |=|  0 |;| 
+    while x  |>|  0
+        y  |:|  |=|  x  |+|  y |;| 
+        x  |:|  |=|  x  |-|  1 |;| 
+    endw |;| 
+    output y |;| 
+    return y |;| 
 endf |;| 
 
 x  |:|  |=|  f |(|  |)|  |;| 
 y  |:|  |=|  g |(|  |)|  |;| 
 z  |:|  |=|  x  |+|  y |;| 
-output z |;| 
 return z |;| )
