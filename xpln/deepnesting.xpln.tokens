@@ -1,0 +1,67 @@
+(fun TriviallyOptimizableDeepNesting |(|  |)| 
+    if 1  |>|  0
+        if 1  |>|  0
+            if 1  |>|  0
+                if 1  |>|  0
+                    if 1  |>|  0
+                        if 1  |>|  0
+                            if 1  |>|  0
+                                if 1  |>|  0
+                                    if 1  |>|  0
+                                        if 1  |>|  0
+                                            if 1  |>|  0
+                                                if 1  |>|  0
+                                                    if 1  |>|  0
+                                                        if 1  |>|  0
+                                                            if 1  |>|  0
+                                                                if 1  |>|  0
+                                                                    if 1  |>|  0
+                                                                        if 1  |>|  0
+                                                                            if 1  |>|  0
+                                                                                if 1  |>|  0
+                                                                                    if 1  |>|  0
+                                                                                        if 1  |>|  0
+                                                                                            if 1  |>|  0
+                                                                                                if 1  |>|  0
+                                                                                                    if 1  |>|  0
+                                                                                                        if 1  |>|  0
+                                                                                                            if 1  |>|  0
+                                                                                                                if 1  |>|  0
+                                                                                                                    if 1  |>|  0
+                                                                                                                        return 42 |;| 
+                                                                                                                    endi |;| 
+                                                                                                                endi |;| 
+                                                                                                            endi |;| 
+                                                                                                        endi |;| 
+                                                                                                    endi |;| 
+                                                                                                endi |;| 
+                                                                                            endi |;| 
+                                                                                        endi |;| 
+                                                                                    endi |;| 
+                                                                                endi |;| 
+                                                                            endi |;| 
+                                                                        endi |;| 
+                                                                    endi |;| 
+                                                                endi |;| 
+                                                            endi |;| 
+                                                        endi |;| 
+                                                    endi |;| 
+                                                endi |;| 
+                                            endi |;| 
+                                        endi |;| 
+                                    endi |;| 
+                                endi |;| 
+                            endi |;| 
+                        endi |;| 
+                    endi |;| 
+                endi |;| 
+            endi |;| 
+        endi |;| 
+    endi |;| 
+
+    return 0 |;| 
+endf |;| 
+
+x  |:|  |=|  TriviallyOptimizableDeepNesting |(|  |)|  |;| 
+output x |;| 
+return 0 |;| )
