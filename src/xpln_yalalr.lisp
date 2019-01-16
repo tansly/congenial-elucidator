@@ -33,6 +33,8 @@
 
 (defparameter *blockno* 0)  ;; increment this everytime a new code block (procedure etc.) is entered. 
 
+(defparameter *localoffset* 0)
+
 (defun target-code-mips (input &optional (outp nil))
   "if outp is t, will send it to std out"
   (clrhash *symtab*) ; we need to reset the symbol table for every code gen
@@ -46,15 +48,26 @@
 
 (defun mk-sym-entry (name)
   "NB: Lisp hash is collision-free, duplicates just replace the older value."
-  (cond ((numberp name) (setf (gethash (list name *blockno*) *symtab*) (list 'num name)))
-        ((symbolp name) (setf (gethash (list name *blockno*) *symtab*) (list 'var name)))
-        (t (setf (gethash (list name *blockno*) *symtab*) (list 'unknown name)))))
+  (cond ((numberp name)
+         (setf (gethash (list name *blockno*) *symtab*) (list 'num name *blockno*)))
+        ((symbolp name)
+         (if (not (gethash (list name *blockno*) *symtab*))
+           (progn
+             (setf (gethash (list name *blockno*) *symtab*) (list 'var name *blockno* *localoffset*))
+             (incf *localoffset* 4))))
+        (t (setf (gethash name *symtab*) (list 'fun name *blockno*)))))
 
 (defun sym-get-type (val)
   (first val))
 
 (defun sym-get-value (val)
   (second val))
+
+(defun sym-get-block (val)
+  (third val))
+
+(defun sym-get-offset (val)
+  (fourth val))
 
 ;; SDD section
 ;;
@@ -98,7 +111,9 @@
   "create li if constant or lw if not"
   (if (numberp p)
     (format t "~%li ~(~A~),~(~A~)" register p)
-    (format t "~%lw ~(~A~),var_~(~A~)" register p)))
+    (progn
+      (format t "~%sub $t7,$fp,~(~A~)~d" p *blockno*)
+      (format t "~%lw ~(~A~),($t7)" register))))
 
 (defun tac-get-mips (op)
   (second (assoc op *tac-to-mips*)))
@@ -111,7 +126,7 @@
     (mk-mips p2 "$t0")
     (mk-mips p3 "$t1")
     (format t "~%~(~A~) $t0,$t0,$t1" op)
-    (format t "~%sw $t0,var_~(~A~)" p1)))
+    (format t "~%sw $t0,~(~A~)~d" p1 *blockno*)))
 
 (defun mk-mips-2ac (i)
   (let ((op (tac-get-mips (first i)))
@@ -119,30 +134,44 @@
         (p2 (third i)))
     (mk-mips p2 "$t1")
     (format t "~%~(~A~) $t0,$zero,$t1" op)
-    (format t "~%sw $t0,var_~(~A~)" p1)))
+    (format t "~%sub $t7,$fp,~(~A~)~d" p1 *blockno*)
+    (format t "~%sw $t0,($t7)")))
 
 (defun mk-mips-2copy (i)
   (let ((p1 (first i))
         (p2 (second i)))
     (mk-mips p2 "$t0")
-    (format t "~%sw $t0,var_~(~A~)" p1)))
+    (format t "~%sub $t7,$fp,~(~A~)~d" p1 *blockno*)
+    (format t "~%sw $t0,($t7)")))
 
 (defun mk-mips-branch (i)
   (let ((op (tac-get-mips (first i)))
         (p1 (second i))
         (p2 (third i)))
     (mk-mips p1 "$t0")
-    (format t "~%~(~A~) $t0,label_~(~A~)" op p2)))
+    (format t "~%~(~A~) $t0,~(~A~)" op p2)))
 
 (defun mk-mips-label (i)
   (let ((label (first i)))
-    (format t "~%label_~(~A:~)" label)))
+    (let ((blockn (sym-get-block (gethash (list label) *symtab*))))
+      (if blockn
+        (setf *blockno* blockn))
+      (format t "~%~(~A:~)" label)
+      ;; XXX: Dirty hack
+      ;; Not all labels are functions. But we do not distinguish
+      ;; function labels from ordinary jump labels, so at every
+      ;; label we save the return address register to the stack
+      ;; because we need it if the label is a function.
+      ;; Of course, most of these saves will be spurious
+      ;; but will not cause any harm.
+      (format t "~%sw $ra,($sp)"))))
 
 (defun mk-mips-readint (i)
   (let ((var (first i)))
     (mk-mips 5 "$v0")
     (format t "~%syscall")
-    (format t "~%sw $v0,var_~(~A~)" var)))
+    (format t "~%sub $t7,$fp,~(~A~)~d" var *blockno*)
+    (format t "~%sw $v0,($t7)")))
 
 (defun mk-mips-printint (i)
   (let ((var (first i)))
@@ -150,17 +179,43 @@
     (mk-mips var "$a0")
     (format t "~%syscall")))
 
+(defun mk-mips-call (i)
+  (let ((fun (first i))
+        (retplace (second i)))
+    ;; XXX: Stack frames are fixed to 256 bytes of size.
+    ;; TODO: Determine the size of the stack frame dynamically.
+    (format t "~%sw $fp,4($sp)")
+    (format t "~%lw $fp,$sp")
+    (format t "~%li $t0,256")
+    (format t "~%sub $sp,$sp,$t0")
+    (format t "~%jal ~(~A~)" fun)
+    ;; After return
+    ;; Restore stack and frame pointers
+    (format t "~%sw $fp,$sp")
+    (format t "~%lw $fp,4($sp)")
+    ;; Save the return value
+    (format t "~%sub $t7,$fp,~(~A~)~d" retplace *blockno*)
+    (format t "~%sw $v0,($t7)")))
+
+(defun mk-mips-return (i)
+  (let ((retexpr (first i)))
+    (mk-mips retexpr "$v0")
+    (format t "~%lw $ra,($sp)")
+    (format t "~%jr $ra")))
+
 (defun create-data-segment ()
   "only for variables; numbers will use li loading rather than lw
   If you have more than one block, you need to create .data for each block."
   (format t "~2%.data~%")
   (maphash #'(lambda (key val)
-               (if (equal (sym-get-type val) 'VAR) (format t "~%var_~(~A~): .word 0" (sym-get-value val))))
-           *symtab*))
+               (if (equal (sym-get-type val) 'VAR)
+                 (format t "~%~(~A~)~d: .word ~d"
+                         (sym-get-value val)
+                         (sym-get-block val)
+                         (sym-get-offset val)))) *symtab*))
 
 (defun create-code-segment (code)
   (format t "~2%.text~2%") 
-  (format t "main:~%")
   (dolist (instruction (second code)) ; NB. code is a grammar variable feature (code i1 i2 i3 ...)
     (let ((itype (first instruction)))
       (cond ((equal itype '3AC) (mk-mips-3ac (rest instruction)))
@@ -170,6 +225,8 @@
             ((equal itype 'BRANCH) (mk-mips-branch (rest instruction)))
             ((equal itype 'INPUT) (mk-mips-readint (rest instruction)))
             ((equal itype 'OUTPUT) (mk-mips-printint (rest instruction)))
+            ((equal itype 'CALL) (mk-mips-call (rest instruction)))
+            ((equal itype 'RETURN) (mk-mips-return (rest instruction)))
             (t (format t "unknown TAC code: ~(~A~)" instruction))))))
 
 (defun map-to-mips (code)
@@ -179,6 +236,7 @@
   (if (stringp *outstream*) (dribble))) ; must close dribble
 
 (defun tac-to-rac (code)
+  (maphash #'(lambda (key val)(format t "~%~A : ~A" key val)) *symtab*)
   (format t  "~2%TAC code:~2%")
   (pprint-code code)
   (format t "~2%MIPS-style code using register ops only:~2%")
@@ -219,6 +277,12 @@
 (defun mk-output (var)
   (wrap (list 'output var)))
 
+(defun mk-call (fun retplace)
+  (wrap (list 'call fun retplace)))
+
+(defun mk-return (var)
+  (wrap (list 'return var)))
+
 (defun newtemp ()
   (gensym "tmp"))       ; returns a new symbol prefixed tmp_ at Lisp run-time
 
@@ -226,10 +290,59 @@
 
 (defparameter grammar
   '(
-    (start --> stmt END entries
-           #'(lambda (stmt END entries)
-               (tac-to-rac (mk-code (append (var-get-code stmt)
-                                            (var-get-code entries))))))
+    (start --> defs stmts
+           #'(lambda (defs stmts)
+               (mk-sym-entry (list 'main))
+               (tac-to-rac (mk-code (append (var-get-code defs)
+                                            (mk-label 'main)
+                                            (var-get-code stmts))))))
+
+    (defs -->
+             #'(lambda ()
+                 (list (mk-place nil)
+                       (mk-code nil))))
+    (defs --> defs def
+             #'(lambda (defs def)
+                 (list (mk-place nil)
+                       (mk-code (append (var-get-code defs)
+                                        (var-get-code def))))))
+
+    (def --> K_FUN ID fplist stmts K_ENDFUN END
+         #'(lambda (K_FUN ID fplist stmts K_ENDFUN END)
+             (progn
+               (mk-sym-entry (list (sym-get-value ID)))
+               (incf *blockno*)
+               (setf *localoffset* 0)
+               (list (mk-place nil)
+                     (mk-code (append (mk-label (sym-get-value ID))
+                                      (var-get-code stmts)))))))
+
+    (fplist --> LP fargs RP
+            #'(lambda (LP fargs RP)
+                (identity fargs)))
+
+    (fargs -->
+           #'(lambda ()
+               (list (mk-place nil)
+                     (mk-code nil))))
+    ;; TODO: Non-empty argument list
+
+    (fcall --> ID aplist
+           #'(lambda (ID aplist)
+               (let ((retplace (newtemp)))
+                 (mk-sym-entry retplace)
+                 (list (mk-place retplace)
+                       (mk-code (mk-call (t-get-val ID) retplace))))))
+
+    (aplist --> LP aargs RP
+            #'(lambda (LP aargs RP)
+                (identity aargs)))
+
+    (aargs -->
+           #'(lambda ()
+               (list (mk-place nil)
+                     (mk-code nil))))
+    ;; TODO: Non-empty argument list
 
     (stmts --> stmt END
            #'(lambda (stmt END)
@@ -298,9 +411,9 @@
 
     (ret --> K_RET expr
          #'(lambda (K_RET expr)
-             ;; TODO: Code
              (list (mk-place nil)
-                   (mk-code nil))))
+                   (mk-code (append (var-get-code expr)
+                                    (mk-return (var-get-place expr)))))))
 
     (ifcond --> K_IF cexpr stmts K_ENDIF
             #'(lambda (K_IF cexpr stmts K_ENDIF)
@@ -435,21 +548,6 @@
                                                 (var-get-place expr2)
                                                 (var-get-place expr1))))))))
 
-    ;; TODO: Function definitions
-    (entry --> stmt
-           #'(lambda (stmt)
-               (identity stmt)))
-
-    (entries -->
-             #'(lambda ()
-                 (list (mk-place nil)
-                       (mk-code nil))))
-    (entries --> entries entry END
-             #'(lambda (entries entry end)
-                 (list (mk-place nil)
-                       (mk-code (append (var-get-code entries)
-                                        (var-get-code entry))))))
-
     (expr --> expr ADD term
           #'(lambda (expr ADD term)
               (let ((newplace (newtemp)))
@@ -505,6 +603,9 @@
     (factor --> LP expr RP
             #'(lambda (LP expr RP)
                 (identity expr)))
+    (factor --> fcall
+            #'(lambda (fcall)
+                (identity fcall)))
     (factor --> SUB ID
             #'(lambda (SUB ID)
                 (let ((newplace (newtemp)))
@@ -525,7 +626,10 @@
                          ID END COLON EQLS LP RP ADD SUB MULT DIV GT LT
                          K_RET K_IF K_ENDIF K_ELSE K_WHILE K_ENDWHILE
                          K_AND K_OR
-                         K_INPUT K_OUTPUT))
+                         K_INPUT K_OUTPUT
+                         K_FUN K_ENDFUN
+                         ARGSEPERATOR
+                         ))
 
 (defparameter lexicon '(
                         (\; END) ;; all but ID goes in the lexicon
@@ -551,6 +655,9 @@
                         (! K_NOT)
                         (input K_INPUT)
                         (output K_OUTPUT)
+                        (fun K_FUN)
+                        (endf K_ENDFUN)
+                        (|,| ARGSEPERATOR)
                         ))
 ;; if you change the end-marker, change its hardcopy above in lexicon above as well.
 ;; (because LALR parser does not evaluate its lexicon symbols---sorry.)
