@@ -190,13 +190,13 @@
     ;; XXX: Stack frames are fixed to 256 bytes of size.
     ;; TODO: Determine the size of the stack frame dynamically.
     (format t "~%sw $fp,4($sp)")
-    (format t "~%lw $fp,$sp")
+    (format t "~%move $fp,$sp")
     (format t "~%li $t0,256")
     (format t "~%sub $sp,$sp,$t0")
     (format t "~%jal ~(~A~)" fun)
     ;; After return
     ;; Restore stack and frame pointers
-    (format t "~%sw $fp,$sp")
+    (format t "~%move $sp,$fp")
     (format t "~%lw $fp,4($sp)")
     ;; Save the return value
     (mk-mips-lea retplace "$t7")
