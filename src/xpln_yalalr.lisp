@@ -131,7 +131,8 @@
     (mk-mips p2 "$t0")
     (mk-mips p3 "$t1")
     (format t "~%~(~A~) $t0,$t0,$t1" op)
-    (format t "~%sw $t0,~(~A~)~d" p1 *blockno*)))
+    (mk-mips-lea p1 "$t1")
+    (format t "~%sw $t0,($t1)")))
 
 (defun mk-mips-2ac (i)
   (let ((op (tac-get-mips (first i)))
