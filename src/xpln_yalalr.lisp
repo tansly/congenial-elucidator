@@ -211,15 +211,26 @@
     (format t "~%lw $ra,($sp)")
     (format t "~%jr $ra")))
 
+;; Argument i is always NIL and will be ignored
 (defun mk-mips-entry (i)
-  (let ((retplace (first i)))
+  (progn
     ;; Set up the stack frame for the main function and initialize
     ;; the frame pointer.
     (format t "~%main:")
     (format t "~%move $fp,$sp")
     (format t "~%li $t0,256")
     (format t "~%sub $sp,$sp,$t0")
-    (mk-mips-call (list 'mainbody retplace))
+    ;; Call mainbody
+    (format t "~%sw $fp,4($sp)")
+    (format t "~%move $fp,$sp")
+    (format t "~%li $t0,256")
+    (format t "~%sub $sp,$sp,$t0")
+    (format t "~%jal ~(~A~)" 'mainbody)
+    ;; After return
+    ;; Restore stack and frame pointers
+    (format t "~%move $sp,$fp")
+    (format t "~%lw $fp,4($sp)")
+    ;; Exit
     (format t "~%li $v0,10")
     (format t "~%syscall")))
 
@@ -320,10 +331,7 @@
     (start --> defs stmts
            #'(lambda (defs stmts)
                (let ((retplace (newtemp)))
-                 ;; XXX: Temporary hack
-                 (decf *blockno*)
                  (mk-sym-entry retplace)
-                 (incf *blockno*)
                  (mk-sym-entry (list 'mainbody))
                  (tac-to-rac (mk-code (append (var-get-code defs)
                                               (mk-entry retplace)
