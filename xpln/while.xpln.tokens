@@ -5,4 +5,5 @@ while b  |>|  0
     r  |:|  |=|  r  |*|  a |;| 
     b  |:|  |=|  b  |-|  1 |;| 
 endw |;| 
+output r |;| 
 return r |;| )
