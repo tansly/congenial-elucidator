@@ -187,6 +187,16 @@
     (mk-mips var "$a0")
     (format t "~%syscall")))
 
+(defun mk-mips-param (i)
+  (let ((param (first i))
+        (offset (second i)))
+    (mk-mips offset "$t7")
+    (format t "~%addi $t7,$t7,4")
+    (format t "~%sub $t7,$sp,$t7")
+    ;; t7 now holds the address of the parameter (in the stack)
+    (mk-mips param "$t0")
+    (format t "~%sw $t0,($t7)")))
+
 (defun mk-mips-call (i)
   (let ((fun (first i))
         (retplace (second i)))
@@ -259,6 +269,7 @@
             ((equal itype 'CALL) (mk-mips-call (rest instruction)))
             ((equal itype 'RETURN) (mk-mips-return (rest instruction)))
             ((equal itype 'ENTRY) (mk-mips-entry (rest instruction)))
+            ((equal itype 'PARAM) (mk-mips-param (rest instruction)))
             (t (format t "unknown TAC code: ~(~A~)" instruction))))))
 
 (defun map-to-mips (code)
