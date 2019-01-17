@@ -1,0 +1,12 @@
+(fun RecursiveFibonacci |(| n |)| 
+    if n  |=|  |=|  1 or n  |=|  |=|  2 return 1 |;|  endi |;| 
+    return RecursiveFibonacci |(| n  |-|  1 |)|   |+|  RecursiveFibonacci |(| n  |-|  2 |)|  |;| 
+endf |;| 
+
+input x |;| 
+while x  |>|  0
+    z  |:|  |=|  RecursiveFibonacci |(| x |)|  |;| 
+    output z |;| 
+    input x |;| 
+endw |;| 
+return 0 |;| )
