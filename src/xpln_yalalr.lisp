@@ -309,8 +309,8 @@
 (defun mk-output (var)
   (wrap (list 'output var)))
 
-(defun mk-param (var)
-  (wrap (list 'param var)))
+(defun mk-param (var offset)
+  (wrap (list 'param var offset)))
 
 (defun mk-call (fun retplace)
   (wrap (list 'call fun retplace)))
@@ -401,12 +401,16 @@
     (aargs --> expr
            #'(lambda (expr)
                (list (mk-place 0)
-                     (mk-code (mk-param (var-get-place expr))))))
+                     (mk-code (mk-param
+                                (var-get-place expr)
+                                0)))))
     (aargs --> aargs ARGSEPERATOR expr
            #'(lambda (aargs ARGSEPERATOR expr)
-               (list (mk-place (+ 1 (var-get-place aargs)))
+               (list (mk-place (+ 4 (var-get-place aargs)))
                      (mk-code (append (var-get-code aargs)
-                                      (mk-param (var-get-place expr)))))))
+                                      (mk-param
+                                        (var-get-place expr)
+                                        (+ 4 (var-get-place aargs))))))))
 
     (stmts --> stmt END
            #'(lambda (stmt END)
