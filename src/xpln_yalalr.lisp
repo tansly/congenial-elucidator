@@ -311,7 +311,7 @@
   (wrap (list 'exit)))
 
 (defun newtemp ()
-  (gensym "tmp"))       ; returns a new symbol prefixed tmp_ at Lisp run-time
+  (gensym "tmp"))       ; returns a new symbol prefixed tmp at Lisp run-time
 
 ;;;; LALR data 
 
@@ -353,12 +353,23 @@
     (fplist --> LP fargs RP
             #'(lambda (LP fargs RP)
                 (identity fargs)))
+    (fplist --> LP RP
+            #'(lambda (LP RP)
+                (list (mk-place nil)
+                      (mk-code nil))))
 
-    (fargs -->
-           #'(lambda ()
-               (list (mk-place nil)
-                     (mk-code nil))))
-    ;; TODO: Non-empty argument list
+    (fargs --> ID
+           #'(lambda (ID)
+               (progn
+                 (mk-sym-entry (t-get-val ID))
+                 (list (mk-place nil)
+                       (mk-code nil)))))
+    (fargs --> fargs ARGSEPERATOR ID
+           #'(lambda (ID)
+               (progn
+                 (mk-sym-entry (t-get-val ID))
+                 (list (mk-place nil)
+                       (mk-code nil)))))
 
     (fcall --> ID aplist
            #'(lambda (ID aplist)
