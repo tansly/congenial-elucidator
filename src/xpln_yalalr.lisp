@@ -309,6 +309,9 @@
 (defun mk-output (var)
   (wrap (list 'output var)))
 
+(defun mk-param (var)
+  (wrap (list 'param var)))
+
 (defun mk-call (fun retplace)
   (wrap (list 'call fun retplace)))
 
@@ -322,7 +325,7 @@
   (wrap (list 'exit)))
 
 (defun newtemp ()
-  (gensym "tmp"))       ; returns a new symbol prefixed tmp_ at Lisp run-time
+  (gensym "tmp"))       ; returns a new symbol prefixed tmp at Lisp run-time
 
 ;;;; LALR data 
 
@@ -361,29 +364,49 @@
     (fplist --> LP fargs RP
             #'(lambda (LP fargs RP)
                 (identity fargs)))
+    (fplist --> LP RP
+            #'(lambda (LP RP)
+                (list (mk-place nil)
+                      (mk-code nil))))
 
-    (fargs -->
-           #'(lambda ()
-               (list (mk-place nil)
-                     (mk-code nil))))
-    ;; TODO: Non-empty argument list
+    (fargs --> ID
+           #'(lambda (ID)
+               (progn
+                 (mk-sym-entry (t-get-val ID))
+                 (list (mk-place nil)
+                       (mk-code nil)))))
+    (fargs --> fargs ARGSEPERATOR ID
+           #'(lambda (fargs ARGSEPERATOR ID)
+               (progn
+                 (mk-sym-entry (t-get-val ID))
+                 (list (mk-place nil)
+                       (mk-code nil)))))
 
     (fcall --> ID aplist
            #'(lambda (ID aplist)
                (let ((retplace (newtemp)))
                  (mk-sym-entry retplace)
                  (list (mk-place retplace)
-                       (mk-code (mk-call (t-get-val ID) retplace))))))
+                       (mk-code (append (var-get-code aplist)
+                                        (mk-call (t-get-val ID) retplace)))))))
 
     (aplist --> LP aargs RP
             #'(lambda (LP aargs RP)
                 (identity aargs)))
+    (aplist --> LP RP
+            #'(lambda (LP RP)
+                (list (mk-place nil)
+                      (mk-code nil))))
 
-    (aargs -->
-           #'(lambda ()
-               (list (mk-place nil)
-                     (mk-code nil))))
-    ;; TODO: Non-empty argument list
+    (aargs --> expr
+           #'(lambda (expr)
+               (list (mk-place 0)
+                     (mk-code (mk-param (var-get-place expr))))))
+    (aargs --> aargs ARGSEPERATOR expr
+           #'(lambda (aargs ARGSEPERATOR expr)
+               (list (mk-place (+ 1 (var-get-place aargs)))
+                     (mk-code (append (var-get-code aargs)
+                                      (mk-param (var-get-place expr)))))))
 
     (stmts --> stmt END
            #'(lambda (stmt END)
