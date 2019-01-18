@@ -12,7 +12,7 @@ fun RecursiveFactorial(n)
     if n <= 0
         return 1;
     endi;
-    return n * RecursiveFactorial(n - 1)
+    return n * RecursiveFactorial(n - 1);
 endf;
 
 x := IterativeFactorial(10);
