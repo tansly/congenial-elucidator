@@ -177,6 +177,10 @@
   (let ((var (first i)))
     (mk-mips 1 "$v0")
     (mk-mips var "$a0")
+    (format t "~%syscall")
+    ;; Print out a linefeed
+    (format t "~%li $v0,4")
+    (format t "~%la $a0,linefeed")
     (format t "~%syscall")))
 
 (defun mk-mips-param (i)
@@ -241,6 +245,7 @@
   "only for variables; numbers will use li loading rather than lw
   If you have more than one block, you need to create .data for each block."
   (format t "~2%.data~%")
+  (format t "~%linefeed:.asciiz \"\\n\"")
   (maphash #'(lambda (key val)
                (if (equal (sym-get-type val) 'VAR)
                  (format t "~%~(~A~)~d: .word ~d"
