@@ -18,3 +18,5 @@ endf;
 
 z := testalotofarguments();
 output z;
+
+return 0;

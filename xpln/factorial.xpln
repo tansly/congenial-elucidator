@@ -25,3 +25,5 @@ else
     z := 0;
 endi;
 output z;
+
+return 0;

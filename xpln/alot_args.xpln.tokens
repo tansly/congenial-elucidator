@@ -17,4 +17,6 @@ fun TestALotOfArguments |(|  |)|
 endf |;| 
 
 z  |:|  |=|  testalotofarguments |(|  |)|  |;| 
-output z |;| )
+output z |;| 
+
+return 0 |;| )

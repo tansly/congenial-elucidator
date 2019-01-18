@@ -24,4 +24,6 @@ if x  |=|  |=|  y
 else
     z  |:|  |=|  0 |;| 
 endi |;| 
-output z |;| )
+output z |;| 
+
+return 0 |;| )

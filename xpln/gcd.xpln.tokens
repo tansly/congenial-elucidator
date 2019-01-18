@@ -47,4 +47,6 @@ else
     r  |:|  |=|  0 |;| 
 endi |;| 
 
-output r |;| )
+output r |;| 
+
+return 0 |;| )
