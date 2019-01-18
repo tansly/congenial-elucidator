@@ -164,15 +164,7 @@
     (let ((blockn (sym-get-block (gethash (list label) *symtab*))))
       (if blockn
         (setf *blockno* blockn))
-      (format t "~%~(~A:~)" label)
-      ;; XXX: Temporary hack
-      ;; Not all labels are functions. But we do not distinguish
-      ;; function labels from ordinary jump labels, so at every
-      ;; label we save the return address register to the stack
-      ;; because we need it if the label is a function.
-      ;; Of course, most of these saves will be spurious
-      ;; but will not cause any harm.
-      (format t "~%sw $ra,($sp)"))))
+      (format t "~%~(~A:~)" label))))
 
 (defun mk-mips-readint (i)
   (let ((var (first i)))
@@ -202,15 +194,17 @@
         (retplace (second i)))
     ;; XXX: Stack frames are fixed to 256 bytes of size.
     ;; TODO: Determine the size of the stack frame dynamically.
+    (format t "~%sw $ra,($sp)")
     (format t "~%sw $fp,4($sp)")
     (format t "~%move $fp,$sp")
     (format t "~%li $t0,256")
     (format t "~%sub $sp,$sp,$t0")
     (format t "~%jal ~(~A~)" fun)
     ;; After return
-    ;; Restore stack and frame pointers
+    ;; Restore stack and frame pointers and return address register
     (format t "~%move $sp,$fp")
     (format t "~%lw $fp,4($sp)")
+    (format t "~%lw $ra,($sp)")
     ;; Save the return value
     (mk-mips-lea retplace "$t7")
     (format t "~%sw $v0,($t7)")))
@@ -218,7 +212,6 @@
 (defun mk-mips-return (i)
   (let ((retexpr (first i)))
     (mk-mips retexpr "$v0")
-    (format t "~%lw $ra,($sp)")
     (format t "~%jr $ra")))
 
 ;; Argument i is always NIL and will be ignored
