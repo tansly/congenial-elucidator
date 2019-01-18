@@ -39,6 +39,7 @@
   "if outp is t, will send it to std out"
   (clrhash *symtab*) ; we need to reset the symbol table for every code gen
   (setf *blockno* 0)
+  (setf *localoffset* 0)
   (if (or (listp input) (not outp))
     (setf *outstream* nil)
     (setf *outstream* (concatenate 'string "target_" input ".s")))
