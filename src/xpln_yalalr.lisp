@@ -192,12 +192,12 @@
 (defun mk-mips-call (i)
   (let ((fun (first i))
         (retplace (second i)))
-    ;; XXX: Stack frames are fixed to 256 bytes of size.
+    ;; XXX: Stack frames are fixed to 512 bytes of size.
     ;; TODO: Determine the size of the stack frame dynamically.
     (format t "~%sw $ra,($sp)")
     (format t "~%sw $fp,4($sp)")
     (format t "~%move $fp,$sp")
-    (format t "~%li $t0,256")
+    (format t "~%li $t0,512")
     (format t "~%sub $sp,$sp,$t0")
     (format t "~%jal ~(~A~)" fun)
     ;; After return
@@ -221,12 +221,12 @@
     ;; the frame pointer.
     (format t "~%main:")
     (format t "~%move $fp,$sp")
-    (format t "~%li $t0,256")
+    (format t "~%li $t0,512")
     (format t "~%sub $sp,$sp,$t0")
     ;; Call mainbody
     (format t "~%sw $fp,4($sp)")
     (format t "~%move $fp,$sp")
-    (format t "~%li $t0,256")
+    (format t "~%li $t0,512")
     (format t "~%sub $sp,$sp,$t0")
     (format t "~%jal ~(~A~)" 'mainbody)
     ;; After return
