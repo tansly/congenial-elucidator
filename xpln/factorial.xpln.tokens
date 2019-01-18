@@ -1,0 +1,25 @@
+(fun IterativeFactorial |(| n |)| 
+    product  |:|  |=|  1 |;| 
+    j  |:|  |=|  1 |;| 
+    while j  |<|  |=|  n
+        product  |:|  |=|  product  |*|  j |;| 
+        j  |:|  |=|  j  |+|  1 |;| 
+    endw |;| 
+    return product |;| 
+endf |;| 
+
+fun RecursiveFactorial |(| n |)| 
+    if n  |<|  |=|  0
+        return 1 |;| 
+    endi |;| 
+    return n  |*|  RecursiveFactorial |(| n  |-|  1 |)| 
+endf |;| 
+
+x  |:|  |=|  IterativeFactorial |(| 10 |)|  |;| 
+y  |:|  |=|  RecursiveFactorial |(| 10 |)|  |;| 
+if x  |=|  |=|  y
+    z  |:|  |=|  1 |;| 
+else
+    z  |:|  |=|  0 |;| 
+endi |;| 
+output z |;| )

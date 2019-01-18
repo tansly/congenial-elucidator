@@ -1,0 +1,50 @@
+fun modulo(a, b)
+    k := 0;
+    while a - k * b >= b
+        k := k + 1;
+    endw;
+    return a - k * b;
+endf;
+
+fun gcd_sub(a, b)
+    while !(a == b)
+        if a > b
+            a := a - b;
+        else
+            b := b - a;
+        endi;
+    endw;
+    return a;
+endf;
+
+fun gcd_mod(a, b)
+    while ! b == 0
+        t := b;
+        b := modulo(a, b);
+        a := t;
+    endw;
+    return a;
+endf;
+
+fun gcd_recursive(a, b)
+    if b == 0
+        return a;
+    else
+        return gcd_recursive(b, modulo(a, b));
+    endi;
+endf;
+
+x := gcd_sub(50500, 100899);
+output x;
+y := gcd_mod(50500, 100899);
+output y;
+z := gcd_recursive(50500, 100899);
+output z;
+
+if x == y and y == z
+    r := 1;
+else
+    r := 0;
+endi;
+
+output r;
