@@ -100,7 +100,7 @@ fun RecursiveFibonacci |(| n |)|
 endf |;| 
 
 fun EuclideanGCD |(| a |,|  b |)| 
-    while eq |(| a |,|  b |)|   |<|  0
+    while  |!|  |(| a  |=|  |=|  b |)| 
         if a  |>|  b
             a  |:|  |=|  a  |-|  b |;| 
         else
