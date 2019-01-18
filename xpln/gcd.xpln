@@ -1,4 +1,4 @@
-fun modulo(a, b)
+fun Modulo(a, b)
     k := 0;
     while a - k * b >= b
         k := k + 1;
@@ -6,7 +6,7 @@ fun modulo(a, b)
     return a - k * b;
 endf;
 
-fun gcd_sub(a, b)
+fun GcdSub(a, b)
     while !(a == b)
         if a > b
             a := a - b;
@@ -17,7 +17,7 @@ fun gcd_sub(a, b)
     return a;
 endf;
 
-fun gcd_mod(a, b)
+fun GcdMod(a, b)
     while ! b == 0
         t := b;
         b := modulo(a, b);
@@ -26,19 +26,19 @@ fun gcd_mod(a, b)
     return a;
 endf;
 
-fun gcd_recursive(a, b)
+fun GcdRecursive(a, b)
     if b == 0
         return a;
     else
-        return gcd_recursive(b, modulo(a, b));
+        return GcdRecursive(b, modulo(a, b));
     endi;
 endf;
 
-x := gcd_sub(50500, 100899);
+x := GcdSub(50500, 100899);
 output x;
-y := gcd_mod(50500, 100899);
+y := GcdMod(50500, 100899);
 output y;
-z := gcd_recursive(50500, 100899);
+z := GcdRecursive(50500, 100899);
 output z;
 
 if x == y and y == z
