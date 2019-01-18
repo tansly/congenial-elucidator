@@ -16,7 +16,9 @@ fun RecursiveFactorial |(| n |)|
 endf |;| 
 
 x  |:|  |=|  IterativeFactorial |(| 10 |)|  |;| 
+output x |;| 
 y  |:|  |=|  RecursiveFactorial |(| 10 |)|  |;| 
+output y |;| 
 if x  |=|  |=|  y
     z  |:|  |=|  1 |;| 
 else
