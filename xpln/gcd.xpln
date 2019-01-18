@@ -34,11 +34,11 @@ fun GcdRecursive(a, b)
     endi;
 endf;
 
-x := GcdSub(50500, 100899);
+x := GcdSub(49, 56);
 output x;
-y := GcdMod(50500, 100899);
+y := GcdMod(56, 49);
 output y;
-z := GcdRecursive(50500, 100899);
+z := GcdRecursive(56, 49);
 output z;
 
 if x == y and y == z
