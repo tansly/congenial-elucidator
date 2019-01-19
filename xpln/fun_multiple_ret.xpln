@@ -1,6 +1,3 @@
-a := 2;
-b := 8;
-
 fun f(x, y)
     r := 1;
     while y > 0
@@ -27,6 +24,9 @@ fun h(x, y)
     endw;
     return r;
 endf;
+
+a := 2;
+b := 8;
 
 c := 3 + f(a + 1, b / 4) * (4 + 2);
 output c;

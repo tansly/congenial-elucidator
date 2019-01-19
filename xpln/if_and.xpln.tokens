@@ -4,4 +4,5 @@ if a  |<|  5 and a  |>|  1
     a  |:|  |=|  6 |;| 
     a  |:|  |=|  7 |;| 
 eNdi |;| 
-return a |;| )
+output a |;| 
+return 0 |;| )
