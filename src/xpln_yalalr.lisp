@@ -83,7 +83,7 @@
 (defparameter *tac-to-mips* '(
                               (MULT "mul") (DIV "div") (ADD "add") (SUB "sub") (UMINUS "sub")
                               (LT "slt") (LTE "sle") (EQ "seq") (BZ "beqz") (GOTO "j")
-                              (AND "and") (NOT "nor")(OR "or"))) ; intstruction set corr.
+                              (AND "and") (XOR "xor")(OR "or"))) ; intstruction set corr.
 
 ;; two functions to get type and value of tokens
 
@@ -571,8 +571,9 @@
                    (mk-sym-entry newplace)
                    (list (mk-place newplace)
                          (mk-code (append (var-get-code cexpr)
-                                          (mk-2ac 'not
+                                          (mk-3ac 'xor
                                                   newplace
+                                                  1
                                                   (var-get-place cexpr))))))))
     (cfactor --> rexpr
              #'(lambda (rexpr)
