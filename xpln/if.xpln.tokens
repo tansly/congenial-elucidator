@@ -2,4 +2,5 @@
 if a  |>|  5
     a  |:|  |=|  5 |;| 
 endi |;| 
+output a |;| 
 return a |;| )

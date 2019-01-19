@@ -1,8 +1,0 @@
-(a  |:|  |=|  3  |*|   |(| 4  |+|  5 |)|   |+|  2  |*|  3 |;| 
-if a  |<|  5
-    output a |;| 
-else
-    input b |;| 
-    output b |;| 
-endi |;| 
-return a  |+|  b |;| )
