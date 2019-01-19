@@ -258,6 +258,7 @@
   (format t "~2%.text~2%") 
   (dolist (instruction (second code)) ; NB. code is a grammar variable feature (code i1 i2 i3 ...)
     (let ((itype (first instruction)))
+      (format t "~%# ~S" instruction)
       (cond ((equal itype '3AC) (mk-mips-3ac (rest instruction)))
             ((equal itype '2AC) (mk-mips-2ac (rest instruction)))
             ((equal itype '2COPY) (mk-mips-2copy (rest instruction)))
