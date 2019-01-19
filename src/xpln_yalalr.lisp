@@ -402,7 +402,15 @@
 
     (aplist --> LP aargs RP
             #'(lambda (LP aargs RP)
-                (identity aargs)))
+                (list (mk-place nil)
+                      (mk-code (append (var-get-code aargs)
+                                       (map
+                                         'list
+                                         #'(lambda (argplace)
+                                             (let ((place (first argplace))
+                                                   (offset (second argplace)))
+                                               (first (mk-param place offset))))
+                                         (var-get-place aargs)))))))
     (aplist --> LP RP
             #'(lambda (LP RP)
                 (list (mk-place nil)
@@ -410,19 +418,16 @@
 
     (aargs --> expr
            #'(lambda (expr)
-               (list (mk-place 0)
-                     (mk-code (append (var-get-code expr)
-                                      (mk-param
-                                        (var-get-place expr)
-                                        0))))))
+               (list (mk-place (list (list (var-get-place expr)
+                                           0)))
+                     (mk-code (var-get-code expr)))))
     (aargs --> aargs ARGSEPERATOR expr
            #'(lambda (aargs ARGSEPERATOR expr)
-               (list (mk-place (+ 4 (var-get-place aargs)))
+               (list (mk-place (append (var-get-place aargs)
+                                       (list (list (var-get-place expr)
+                                                   (+ 4 (second (first (last (var-get-place aargs)))))))))
                      (mk-code (append (var-get-code aargs)
-                                      (var-get-code expr)
-                                      (mk-param
-                                        (var-get-place expr)
-                                        (+ 4 (var-get-place aargs))))))))
+                                      (var-get-code expr))))))
 
     (stmts --> stmt END
            #'(lambda (stmt END)
