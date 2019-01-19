@@ -34,19 +34,13 @@ fun GcdRecursive |(| a |,|  b |)|
     endi |;| 
 endf |;| 
 
-x  |:|  |=|  GcdSub |(| 49 |,|  56 |)|  |;| 
-output x |;| 
-y  |:|  |=|  GcdMod |(| 56 |,|  49 |)|  |;| 
-output y |;| 
-z  |:|  |=|  GcdRecursive |(| 56 |,|  49 |)|  |;| 
+input x |;| 
+input y |;| 
+z  |:|  |=|  GcdSub |(| x |,|  y |)|  |;| 
 output z |;| 
-
-if x  |=|  |=|  y and y  |=|  |=|  z
-    r  |:|  |=|  1 |;| 
-else
-    r  |:|  |=|  0 |;| 
-endi |;| 
-
-output r |;| 
+z  |:|  |=|  GcdMod |(| x |,|  y |)|  |;| 
+output z |;| 
+z  |:|  |=|  GcdRecursive |(| x |,|  y |)|  |;| 
+output z |;| 
 
 return 0 |;| )
